@@ -1,0 +1,50 @@
+---
+import { Image } from '@astrojs/image/components';
+import johtoKanto from '../../../tracker-data/images/maps/johto_kanto.png';
+import imageSize from 'image-size';
+import { Tracker } from '../../components/Tracker';
+const { width } = imageSize('tracker-data/images/maps/johto_kanto.png');
+import { getLocations } from '../../lib/location-data';
+import { prisma } from '../../db/client';
+
+const locations = getLocations();
+
+const IMG_WIDTH = 600;
+const POS_MOD = IMG_WIDTH / width!;
+
+let { roomId: origRoomId } = Astro.params as { roomId: string };
+let roomId = origRoomId.toUpperCase();
+
+const similarChars: [string, string][] = [
+	['O', '0'],
+	['I', '1'],
+	['L', '1'],
+	['S', '5'],
+];
+
+similarChars.forEach(([oldChar, newChar]) => {
+	roomId = roomId.replaceAll(oldChar, newChar);
+});
+
+// TODO: rewrite the path instead of redirecting to prevent a potential infinite redirect
+if (roomId !== origRoomId) return Astro.redirect(`/room/${roomId}`);
+
+const room = await prisma.room.findFirst({ where: { id: roomId } });
+if (!room) return Astro.redirect(`/?error=${roomId}`);
+---
+
+<div class="grid gap-8">
+	<Tracker
+		client:load
+		locations={locations}
+		positionModifier={POS_MOD}
+		roomId={roomId}>
+		<Image
+			class="inset-0 block"
+			src={johtoKanto}
+			alt=""
+			width={IMG_WIDTH}
+			hidden
+		/>
+	</Tracker>
+</div>

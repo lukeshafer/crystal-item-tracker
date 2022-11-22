@@ -7,4 +7,4 @@ Goals:
 
 ## Credits
 
-Parts of this project use data and files from the [https://github.com/vicendithas/pokemon-crystal-randomizer-tracker](https://github.com/vicendithas/pokemon-crystal-randomizer-tracker), by by DillonIsMyName and Vicendithas and based on the tracker by StormRider.
+Parts of this project use data and files from [https://github.com/vicendithas/pokemon-crystal-randomizer-tracker](https://github.com/vicendithas/pokemon-crystal-randomizer-tracker), by DillonIsMyName and Vicendithas and based on the tracker by StormRider.

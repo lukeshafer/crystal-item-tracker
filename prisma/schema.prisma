@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model Room {
+  id        String  @id
+  locations Location[] 
+  items     Item[] 
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id    String  @default(cuid()) @unique
+  name  String
+  items UserItem[]
+  checks UserCheck[]
+  roomId String
+  room Room @relation(fields: [roomId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([id, roomId])
+}
+
+model Location {
+  id      Int  
+  roomId  String 
+  room    Room @relation(fields: [roomId], references: [id])
+  checks  Check[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([id, roomId])
+}
+
+model Check {
+  id              Int 
+  roomId          String
+  locationId      Int 
+  location        Location @relation(fields: [locationId, roomId], references: [id, roomId])
+  itemId          Int? 
+  itemFound       Item? @relation(fields: [itemId, roomId], references: [id, roomId])
+  userchecks      UserCheck[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+	@@map("ItemCheck")
+  @@id([id, roomId, locationId])
+  @@unique([itemId, roomId])
+}
+
+model UserCheck {
+  userId  String 
+  roomId  String
+  user    User @relation(fields: [userId, roomId], references: [id, roomId])
+  checkId Int
+  checkLocationId  Int
+  check   Check @relation(fields: [checkId, roomId, checkLocationId], references: [id, roomId, locationId])
+  completed Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, checkId, roomId])
+}
+
+model Item {
+  id                Int @default(autoincrement())
+  roomId            String
+  room              Room @relation(fields: [roomId], references: [id])
+  foundAtCheck      Check?
+  userItemInstances UserItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([id, roomId])
+}
+
+model UserItem {
+  userId  String 
+  roomId  String
+  user    User @relation(fields: [userId, roomId], references: [id, roomId])
+  itemId  Int
+  item    Item @relation(fields: [itemId, roomId], references: [id, roomId])
+  found   Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, itemId, roomId])
+}
+

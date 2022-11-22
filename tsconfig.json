@@ -1,3 +1,13 @@
 {
-  "extends": "astro/tsconfigs/strictest"
+	"$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/tsconfig.json",
+	"extends": "astro/tsconfigs/strictest",
+	"compilerOptions": {
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"rootDir": ".",
+		"paths": {
+			"$/*": ["src/*"],
+			"@/*": ["tracker-data"]
+		}
+	}
 }
