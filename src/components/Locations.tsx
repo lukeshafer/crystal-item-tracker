@@ -1,20 +1,27 @@
-import { locationSignal } from '../lib/state';
-import { Component, For, ParentProps } from 'solid-js';
-import type { LocationMap } from '../lib/location-data';
+//import { locationSignal } from '../lib/state';
+import { Component, createSignal, For, ParentProps } from 'solid-js';
 import { HoverBox } from './Tracker';
+import type { inferRouterOutputs } from '@trpc/server';
+import type { AppRouter } from '../trpc/router/_index';
 
-const [currentLocation, setCurrentLocation] = locationSignal;
+type Location = Exclude<
+	inferRouterOutputs<AppRouter>['location']['getAll']['locations'],
+	undefined
+>[number];
+
+export const currentLocationSignal = createSignal<Location>();
+const [currentLocation, setCurrentLocation] = currentLocationSignal;
 
 export interface Props extends ParentProps {
-	locations: LocationMap;
+	locations: Location[];
 	positionModifier: number;
 }
 
 interface LocationDotProps {
-	name: string;
+	location: Location;
 	setLocation: () => void;
 }
-const LocationDot = ({ name, setLocation }: LocationDotProps) => {
+const LocationDot = ({ location, setLocation }: LocationDotProps) => {
 	let tooltip: HTMLDivElement;
 	const showTooltip = () => (tooltip.style.visibility = 'visible');
 	const hideTooltip = () => (tooltip.style.visibility = 'hidden');
@@ -22,8 +29,8 @@ const LocationDot = ({ name, setLocation }: LocationDotProps) => {
 		<button
 			class="absolute inset-0 block w-full h-full bg-pink-400"
 			classList={{
-				'bg-gray-400': currentLocation().name !== name,
-				'bg-pink-400': currentLocation().name === name,
+				'bg-gray-400': currentLocation()?.name !== location.name,
+				'bg-pink-400': currentLocation()?.name === location.name,
 			}}
 			onMouseEnter={showTooltip}
 			onMouseLeave={hideTooltip}
@@ -32,7 +39,7 @@ const LocationDot = ({ name, setLocation }: LocationDotProps) => {
 			onClick={() => {
 				setLocation();
 			}}>
-			<HoverBox ref={tooltip!}>{name}</HoverBox>
+			<HoverBox ref={tooltip!}>{location.name}</HoverBox>
 		</button>
 	);
 };
@@ -41,23 +48,28 @@ export const LocationsOnMap: Component<Props> = ({
 	locations,
 	positionModifier,
 }: Props) => {
-	const setNewLocation = (name: string) => () => {
-		setCurrentLocation(locations.get(name)!);
+	const setNewLocation = (location: Location) => () => {
+		setCurrentLocation(location);
 	};
 	return (
 		<>
 			<ul>
-				<For each={[...locations]}>
-					{([name, location]) => (
-						<li
-							class="absolute w-4 h-4 -ml-2 -mt-2"
-							style={{
-								left: `${location.map_locations![0]!.x * positionModifier}px`,
-								top: `${location.map_locations![0]!.y * positionModifier}px`,
-							}}>
-							<LocationDot name={name} setLocation={setNewLocation(name)} />
-						</li>
-					)}
+				<For each={locations}>
+					{(location) => {
+						return (
+							<li
+								class="absolute w-4 h-4 -ml-2 -mt-2"
+								style={{
+									left: `${location.x * positionModifier}px`,
+									top: `${location.y * positionModifier}px`,
+								}}>
+								<LocationDot
+									location={location}
+									setLocation={setNewLocation(location)}
+								/>
+							</li>
+						);
+					}}
 				</For>
 			</ul>
 		</>

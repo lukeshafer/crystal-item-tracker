@@ -15,11 +15,15 @@
 		"@astrojs/image": "^0.11.5",
 		"@astrojs/solid-js": "^1.2.3",
 		"@astrojs/tailwind": "^2.1.2",
+		"@fontsource/concert-one": "^4.5.9",
+		"@fontsource/nunito-sans": "^4.5.10",
+		"@fontsource/press-start-2p": "^4.5.11",
 		"@prisma/client": "4.6.1",
+		"@tanstack/solid-query": "^4.15.1",
 		"@trpc/client": "10.0.0-rc.8",
 		"@trpc/server": "10.0.0-rc.8",
 		"@types/node": "^18.11.9",
-		"astro": "^1.6.9",
+		"astro": "^1.6.11",
 		"astro-trpc": "^0.3.1",
 		"image-size": "^1.0.2",
 		"solid-js": "^1.4.3",
@@ -27,10 +31,14 @@
 		"tailwindcss": "^3.0.24",
 		"zod": "^3.19.1"
 	},
+	"prisma": {
+		"seed": "ts-node prisma/seed.ts"
+	},
 	"devDependencies": {
 		"prettier": "^2.7.1",
 		"prettier-plugin-astro": "^0.7.0",
 		"prettier-plugin-tailwindcss": "^0.1.13",
-		"prisma": "^4.6.1"
+		"prisma": "^4.6.1",
+		"ts-node": "^10.9.1"
 	}
 }

@@ -27,7 +27,7 @@ model User {
   items UserItem[]
   checks UserCheck[]
   roomId String
-  room Room @relation(fields: [roomId], references: [id])
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -37,8 +37,11 @@ model User {
 model Location {
   id      Int  
   roomId  String 
-  room    Room @relation(fields: [roomId], references: [id])
+  room    Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   checks  Check[]
+  name    String
+  x       Int
+  y       Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -47,11 +50,12 @@ model Location {
 
 model Check {
   id              Int 
+  name            String
   roomId          String
   locationId      Int 
-  location        Location @relation(fields: [locationId, roomId], references: [id, roomId])
+  location        Location @relation(fields: [locationId, roomId], references: [id, roomId], onDelete: Cascade)
   itemId          Int? 
-  itemFound       Item? @relation(fields: [itemId, roomId], references: [id, roomId])
+  itemFound       Item? @relation(fields: [itemId, roomId], references: [id, roomId], onDelete: Cascade)
   userchecks      UserCheck[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -63,21 +67,21 @@ model Check {
 model UserCheck {
   userId  String 
   roomId  String
-  user    User @relation(fields: [userId, roomId], references: [id, roomId])
+  user    User @relation(fields: [userId, roomId], references: [id, roomId], onDelete: Cascade)
   checkId Int
   checkLocationId  Int
-  check   Check @relation(fields: [checkId, roomId, checkLocationId], references: [id, roomId, locationId])
+  check   Check @relation(fields: [checkId, roomId, checkLocationId], references: [id, roomId, locationId], onDelete: Cascade)
   completed Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@id([userId, checkId, roomId])
+  @@id([userId, checkId, roomId, checkLocationId])
 }
 
 model Item {
   id                Int @default(autoincrement())
   roomId            String
-  room              Room @relation(fields: [roomId], references: [id])
+  room              Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   foundAtCheck      Check?
   userItemInstances UserItem[]
   createdAt DateTime @default(now())
@@ -89,9 +93,9 @@ model Item {
 model UserItem {
   userId  String 
   roomId  String
-  user    User @relation(fields: [userId, roomId], references: [id, roomId])
+  user    User @relation(fields: [userId, roomId], references: [id, roomId], onDelete: Cascade)
   itemId  Int
-  item    Item @relation(fields: [itemId, roomId], references: [id, roomId])
+  item    Item @relation(fields: [itemId, roomId], references: [id, roomId], onDelete: Cascade)
   found   Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

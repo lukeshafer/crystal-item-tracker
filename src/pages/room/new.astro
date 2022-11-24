@@ -10,7 +10,7 @@ const checkIfRoomIdExists = async (roomId: string) => {
 	return !!room;
 };
 
-const generateRoomId = async (length = 4) => {
+const generateRoomId = async (length = 4): Promise<string | false> => {
 	let str = '';
 	do {
 		str = '';

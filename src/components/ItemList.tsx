@@ -3,7 +3,7 @@ import { Portal } from 'solid-js/web';
 import type { Item } from '../lib/item-data';
 import { HoverBox } from './Tracker';
 import { itemUnderCursorSignal, itemDisplayListSignal } from '../lib/state';
-import { client } from '$/lib/trpc-client';
+import { client } from '../lib/trpc-client';
 
 const [selectedItem, setSelectedItem] = itemUnderCursorSignal;
 const [itemDisplayList, setItemDisplayList] = itemDisplayListSignal;
@@ -25,8 +25,9 @@ const MouseItem = ({ src }: { src: string }) => {
 				src={src}
 				class="absolute left-2 top-2 w-6"
 				style={{
-					transform: `translate(${mousePositions()[0]}px, ${mousePositions()[1]
-						}px)`,
+					transform: `translate(${mousePositions()[0]}px, ${
+						mousePositions()[1]
+					}px)`,
 				}}
 			/>
 		</Portal>

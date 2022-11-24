@@ -1,14 +1,54 @@
-import { createAstroTRPCApiHandler } from 'astro-trpc';
-import { appRouter } from '$/trpc/trpc';
-import { createContext } from '$/trpc/context';
+import { appRouter } from '../../../trpc/router/_index';
+import { generateContextFunction } from '../../../trpc/context';
 
-export default createAstroTRPCApiHandler({
-    router: appRouter,
-    createContext,
-    onError:
-        process.env.NODE_ENV === 'development'
-            ? ({ path, error }: { path: any; error: any }) => {
-                console.error(`❌ tRPC failed on ${path}: ${error}`);
-            }
-            : undefined,
-});
+import type { APIContext } from 'astro';
+import { resolveHTTPResponse } from '@trpc/server/http';
+import type { HTTPHeaders } from '@trpc/client';
+
+/**
+ * Handles trpc query client requests.
+ *
+ * @param {APIContext} - Astro API Context
+ * @returns {Promise<Response>} - trpc response
+ *
+ * @beta
+ */
+async function httpHandler({
+	request,
+	params,
+	url,
+	cookies,
+}: APIContext): Promise<Response> {
+	const userId = cookies.get('userId').value;
+	const roomId = cookies.get('roomId').value;
+
+	if (!userId || !roomId)
+		return new Response(null, {
+			status: 400,
+			statusText: 'Missing userId or roomId',
+		});
+	const query = url.searchParams;
+
+	const requestBody = request.method === 'GET' ? {} : await request.json();
+
+	const { status, headers, ...response } = await resolveHTTPResponse({
+		createContext: generateContextFunction({ userId, roomId }),
+		router: appRouter,
+		path: params.trpc as string,
+		req: {
+			query,
+			method: request.method,
+			headers: request.headers as unknown as HTTPHeaders,
+			body: requestBody,
+		},
+	});
+
+	return new Response(response.body, {
+		headers: headers as HeadersInit,
+		status,
+	});
+}
+
+export const post = httpHandler;
+
+export const get = httpHandler;

@@ -1,34 +1,51 @@
 ---
 import Layout from '../layouts/Layout.astro';
-
 const error = Astro.url.searchParams.get('error');
-console.log(error);
----
 
-<script>
-	const roomId = document.getElementById('roomId') as HTMLInputElement;
-	const joinLink = document.querySelector('#roomId + a') as HTMLAnchorElement;
-	roomId.addEventListener('blur', () => {
-		joinLink.href = `/room/${roomId.value}`;
-	});
-</script>
+const name = Astro.cookies.get('userName').value;
+---
 
 <Layout title="Pokemon Crystal Item Tracker">
 	<main class="grid p-20 items-center justify-items-center gap-4">
-		<h1 class="text-center text-3xl my-6">
-			Pokemon Crystal Key Item Rando Tracker
+		<h1 class="text-center text-3xl my-6 font-display">
+			Co-op Tracker for<span class="text-5xl block pb-2">Pokemon Crystal</span
+			>Item Randomizer
 		</h1>
-		<a class="bg-sky-300 p-2 w-max text-2xl" href="/room/new">New Room</a>
-		<input
-			class="bg-white p-2 text-lg text-center mt-8"
-			type="text"
-			name="roomId"
-			id="roomId"
-			placeholder="Room Code"
-			maxlength="4"
-			value={error}
-		/>
-		<a class="bg-sky-300 p-2 w-max text-2xl" href="">Join Room</a>
-		{error ? <p class="text-red-500">Room {error} does not exist</p> : null}
+		<form
+			method="post"
+			class="grid grid-cols-3 place-items-center justify-center gap-y-8">
+			<input
+				class="bg-white text-black p-2 text-2xl rounded-lg max-w-full w-72 text-center mt-8 col-span-3"
+				type="text"
+				name="userName"
+				id="userName"
+				placeholder="Name"
+				value={name}
+				required
+			/>
+			<button
+				class="bg-sky-800 rounded-lg font-semibold p-2 w-max text-2xl"
+				type="submit"
+				formaction="/api/create-room">Create Room</button
+			>
+			<p class="text-lg font-semibold">or</p>
+			<div class="grid justify-center place-items-center gap-4">
+				<input
+					class="bg-white text-black rounded-lg p-2 text-2xl text-center w-36"
+					type="text"
+					name="roomId"
+					id="roomId"
+					placeholder="Room Code"
+					maxlength="4"
+					value={error}
+				/>
+				<button
+					class="bg-sky-800 rounded-lg font-semibold p-2 w-max text-2xl"
+					type="submit"
+					formaction="/api/join-room">Join Room</button
+				>
+				{error ? <p class="text-red-500">Room {error} does not exist</p> : null}
+			</div>
+		</form>
 	</main>
 </Layout>

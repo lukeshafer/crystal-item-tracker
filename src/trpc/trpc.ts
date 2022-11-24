@@ -1,9 +1,7 @@
 import { initTRPC } from '@trpc/server';
 import superjson from 'superjson';
 import type { Context } from './context';
-import { itemsRouter } from './router/items';
-import { roomRouter } from './router/rooms';
-import { userRouter } from './router/users';
+//import { itemsRouter } from './router/items';
 
 const t = initTRPC.context<Context>().create({
 	// Optional:
@@ -19,15 +17,8 @@ const t = initTRPC.context<Context>().create({
 	},
 });
 
-export const appRouter = t.router({
-	room: roomRouter,
-	user: userRouter,
-	item: itemsRouter,
-	// insert routes here
-});
 // Export type router type signature,
 // NOT the router itself.
-export type AppRouter = typeof appRouter;
 
 /**
  * We recommend only exporting the functionality that we

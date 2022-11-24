@@ -1,4 +1,4 @@
-import { initUser } from '$/db/room-data';
+import { initUser } from '../../db/room-data';
 import { z } from 'zod';
 import { router, publicProcedure } from '../trpc';
 
