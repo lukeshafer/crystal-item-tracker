@@ -1,7 +1,7 @@
-import { router, publicProcedure } from '../trpc';
+import { router, protectedProcedure } from '../trpc';
 
 export const locationRouter = router({
-	getAll: publicProcedure.query(async ({ ctx }) => {
+	getAll: protectedProcedure.query(async ({ ctx }) => {
 		const { roomId, prisma } = ctx;
 		try {
 			const locations = await prisma.location.findMany({

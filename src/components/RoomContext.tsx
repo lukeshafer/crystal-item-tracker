@@ -1,22 +1,18 @@
 import { createContext, ParentProps, useContext } from 'solid-js';
+import type { Item } from '../lib/item-data';
 
-const RoomIdContext = createContext<{ roomId: string; userId: string }>();
-
-interface ProviderProps extends ParentProps {
-	roomId: string;
-	userId: string;
+interface Context {
+	items: Item[];
 }
 
-export const RoomContextProvider = ({
-	children,
-	roomId,
-	userId,
-}: ProviderProps) => {
+const RoomContext = createContext<Context>();
+
+type ProviderProps = Context & ParentProps;
+
+export const RoomContextProvider = ({ children, items }: ProviderProps) => {
 	return (
-		<RoomIdContext.Provider value={{ roomId, userId }}>
-			{children}
-		</RoomIdContext.Provider>
+		<RoomContext.Provider value={{ items }}>{children}</RoomContext.Provider>
 	);
 };
 
-export const useRoomId = () => useContext(RoomIdContext)!;
+export const useRoomContext = () => useContext(RoomContext)!;

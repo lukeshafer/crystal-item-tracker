@@ -36,8 +36,6 @@ const generateRoomId = async (length = 4) => {
 
 export const initRoom = async () => {
 	const roomId = await generateRoomId();
-	const items = getItemData();
-	const locations = [...getLocations().values()];
 
 	try {
 		await prisma.room.create({
@@ -50,10 +48,12 @@ export const initRoom = async () => {
 		throw err;
 	}
 
+	const items = getItemData();
+	const locations = [...getLocations().values()];
 	let step = 'item';
 	try {
-		const itemData = items.map((_, index) => ({ id: index, roomId: roomId }));
-		console.log(itemData);
+		const itemData = items.map(({ id }) => ({ id, roomId: roomId }));
+		console.log('Item data:', itemData);
 		await prisma.item.createMany({
 			data: itemData,
 		});
@@ -80,6 +80,7 @@ export const initRoom = async () => {
 		});
 	} catch (err) {
 		await prisma.room.delete({ where: { id: roomId } });
+		console.error(err);
 		console.error(`Error creating room at ${step} step.`, { roomId });
 		throw err;
 	}

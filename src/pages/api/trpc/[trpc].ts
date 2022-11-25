@@ -19,8 +19,9 @@ async function httpHandler({
 	url,
 	cookies,
 }: APIContext): Promise<Response> {
-	const userId = cookies.get('userId').value;
-	const roomId = cookies.get('roomId').value;
+	const referer = request.headers.get('Referer');
+	const roomId = referer?.split('/').at(-1);
+	const userId = cookies.get(roomId ?? 'invalid').value;
 
 	if (!userId || !roomId)
 		return new Response(null, {

@@ -5,6 +5,7 @@ import imageSize from 'image-size';
 import { Tracker } from '../../components/Tracker';
 const { width } = imageSize('tracker-data/images/maps/johto_kanto.png');
 import { prisma } from '../../db/client';
+import { getItemData } from '../../lib/item-data';
 
 const IMG_WIDTH = 600;
 const POS_MOD = IMG_WIDTH / width!;
@@ -24,17 +25,15 @@ similarChars.forEach(([oldChar, newChar]) => {
 });
 
 // TODO: rewrite the path instead of redirecting to prevent a potential infinite redirect
-Astro.url.pathname = `/room/${roomId}`;
-/*if (roomId !== origRoomId) return Astro.redirect(`/room/${roomId}`);*/
+/*Astro.url.pathname = `/room/${roomId}`;*/
+if (roomId !== origRoomId) return Astro.redirect(`/room/${roomId}`);
 
-Astro.cookies.set('roomId', roomId, {
-	maxAge: 60 * 60 * 24 /* 1 day */,
-	path: '/',
-});
+const items = getItemData()
+
 const room = await prisma.room.findFirst({ where: { id: roomId } });
 if (!room) return Astro.redirect(`/?error=${roomId}`);
 
-let userId = Astro.cookies.get('userId').value ?? '';
+let userId = Astro.cookies.get(roomId).value ?? '';
 const user = await prisma.user.findUnique({ where: { id: userId } });
 if (!user) return Astro.redirect(`/?userError=${userId}`);
 
@@ -45,12 +44,7 @@ const locations = await prisma.location.findMany({ where: { roomId } });
 	<p>
 		{user.name}
 	</p>
-	<Tracker
-		client:load
-		locations={locations}
-		positionModifier={POS_MOD}
-		userId={userId}
-		roomId={roomId}>
+	<Tracker client:load items={items} locations={locations} positionModifier={POS_MOD}>
 		<Image
 			class="inset-0 block"
 			src={johtoKanto}

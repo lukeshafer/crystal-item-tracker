@@ -40,9 +40,10 @@ export const post = async ({
 		});
 	}
 
-	cookies.set('userId', userId, {
+	cookies.set(roomId, userId, {
 		maxAge: 60 * 60 * 24 /* 1 day */,
 		path: '/',
+		httpOnly: true,
 	});
 
 	return redirect(`/room/${roomId}`);

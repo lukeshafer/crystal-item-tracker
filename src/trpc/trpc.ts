@@ -1,7 +1,6 @@
-import { initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import type { Context } from './context';
-//import { itemsRouter } from './router/items';
 
 const t = initTRPC.context<Context>().create({
 	// Optional:
@@ -17,13 +16,21 @@ const t = initTRPC.context<Context>().create({
 	},
 });
 
-// Export type router type signature,
-// NOT the router itself.
+export const router = t.router;
+export const publicProcedure = t.procedure;
 
 /**
- * We recommend only exporting the functionality that we
- * use so we can enforce which base procedures should be used
+ * Reusable middleware to ensure
+ * users are logged in
+ */
+const isAuthed = t.middleware(({ ctx, next }) => {
+	if (!ctx.userId || !ctx.roomId) {
+		throw new TRPCError({ code: 'UNAUTHORIZED' });
+	}
+	return next();
+});
+
+/**
+ * Protected procedure
  **/
-export const router = t.router;
-export const mergeRouters = t.mergeRouters;
-export const publicProcedure = t.procedure;
+export const protectedProcedure = t.procedure.use(isAuthed);

@@ -1,4 +1,3 @@
-//import { locationSignal } from '../lib/state';
 import { Component, createSignal, For, ParentProps } from 'solid-js';
 import { HoverBox } from './Tracker';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -56,6 +55,7 @@ export const LocationsOnMap: Component<Props> = ({
 			<ul>
 				<For each={locations}>
 					{(location) => {
+						if (location.name === 'New Bark Town') setCurrentLocation(location);
 						return (
 							<li
 								class="absolute w-4 h-4 -ml-2 -mt-2"

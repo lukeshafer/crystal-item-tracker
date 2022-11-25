@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { router, publicProcedure } from '../trpc';
+import { router, protectedProcedure } from '../trpc';
 
 export const checkRouter = router({
-	getAllForLocation: publicProcedure
+	getAllForLocation: protectedProcedure
 		.input(
 			z.object({
 				locationId: z.number(),
@@ -42,7 +42,7 @@ export const checkRouter = router({
 				return { status: 500, error: 'Error fetching location' };
 			}
 		}),
-	setCompleted: publicProcedure
+	setCompleted: protectedProcedure
 		.input(
 			z.object({
 				checkId: z.number(),
@@ -72,6 +72,49 @@ export const checkRouter = router({
 			} catch (err) {
 				console.error(err);
 				return { status: 500, error: 'Error updating check' };
+			}
+		}),
+	setItem: protectedProcedure
+		.input(
+			z.object({
+				checkId: z.number(),
+				locationId: z.number(),
+				itemId: z.number().optional(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { roomId, prisma } = ctx;
+			const { checkId, locationId, itemId } = input;
+			try {
+				const result = await prisma.check.update({
+					where: { id_roomId_locationId: { id: checkId, locationId, roomId } },
+					data: { itemId: itemId ?? null },
+				});
+				return result.itemId;
+			} catch (err) {
+				console.error(err);
+				return undefined;
+			}
+		}),
+	getItem: protectedProcedure
+		.input(
+			z.object({
+				checkId: z.number(),
+				locationId: z.number(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { roomId, prisma } = ctx;
+			const { checkId, locationId } = input;
+			try {
+				const result = await prisma.check.findUnique({
+					where: { id_roomId_locationId: { id: checkId, locationId, roomId } },
+					select: { itemId: true },
+				});
+				return result!.itemId;
+			} catch (err) {
+				console.error(err);
+				return undefined;
 			}
 		}),
 });

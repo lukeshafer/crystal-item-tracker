@@ -1,12 +1,15 @@
-import { createSignal, For, onMount, Show } from 'solid-js';
+import { createResource, createSignal, For, onMount, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import type { Item } from '../lib/item-data';
 import { HoverBox } from './Tracker';
-import { itemUnderCursorSignal, itemDisplayListSignal } from '../lib/state';
 import { client } from '../lib/trpc-client';
 
-const [selectedItem, setSelectedItem] = itemUnderCursorSignal;
-const [itemDisplayList, setItemDisplayList] = itemDisplayListSignal;
+export const selectedItemSignal = createSignal<{
+	src: string;
+	id: number;
+	name: string;
+}>();
+const [selectedItem, setSelectedItem] = selectedItemSignal;
 
 export interface Props {
 	items: Item[];
@@ -25,18 +28,30 @@ const MouseItem = ({ src }: { src: string }) => {
 				src={src}
 				class="absolute left-2 top-2 w-6"
 				style={{
-					transform: `translate(${mousePositions()[0]}px, ${
-						mousePositions()[1]
-					}px)`,
+					transform: `translate(${mousePositions()[0]}px, ${mousePositions()[1]
+						}px)`,
 				}}
 			/>
 		</Portal>
 	);
 };
 
-const Item = ({ item, index }: { item: Item; index: number }) => {
+const Item = ({ item }: { item: Item }) => {
 	let tooltip: HTMLDivElement;
-	const { name, img } = item;
+	const { name, img, id } = item;
+	const [collectedStatus, { mutate }] = createResource(() =>
+		client.item.getCollectedStatus.query({ itemId: id })
+	);
+
+	const updateCollectedStatus = (status: boolean) => {
+		setSelectedItem(status ? { id, src: img, name } : undefined);
+		client.item.updateCollectedStatus.mutate({
+			itemId: id,
+			isCollected: status,
+		});
+		mutate(status);
+	};
+
 	const showTooltip = () => (tooltip.style.visibility = 'visible');
 	const hideTooltip = () => (tooltip.style.visibility = 'hidden');
 	return (
@@ -44,22 +59,11 @@ const Item = ({ item, index }: { item: Item; index: number }) => {
 			<button
 				class="relative w-max"
 				onClick={() => {
-					setSelectedItem(index);
-					setItemDisplayList((val) => {
-						const newValue = val.slice();
-						newValue.splice(index, 1, { ...item, selected: true });
-						return newValue;
-					});
+					updateCollectedStatus(true);
 				}}
 				onContextMenu={(e) => {
 					e.preventDefault();
-					//itemDisplayList()[index]!.selected = false;
-					setItemDisplayList((val) => {
-						const newValue = val.slice();
-						newValue.splice(index, 1, { ...item, selected: false });
-						return newValue;
-					});
-					setSelectedItem();
+					updateCollectedStatus(false);
 				}}
 				onMouseEnter={showTooltip}
 				onMouseLeave={hideTooltip}
@@ -70,13 +74,13 @@ const Item = ({ item, index }: { item: Item; index: number }) => {
 					class="w-10 block"
 					alt=""
 					style={{
-						filter: itemDisplayList()[index]!.selected
+						filter: collectedStatus()
 							? 'none'
 							: 'grayscale(100%) brightness(50%)',
 					}}
 				/>
 				<HoverBox ref={tooltip!}>{name}</HoverBox>
-				<Show when={selectedItem() === index}>
+				<Show when={selectedItem()?.id === id}>
 					<MouseItem src={'/' + img} />
 				</Show>
 			</button>
@@ -84,13 +88,11 @@ const Item = ({ item, index }: { item: Item; index: number }) => {
 	);
 };
 
-export const ItemList = () => {
+export const ItemList = ({ items }: { items: Item[] }) => {
 	return (
 		<section>
 			<ul class="grid grid-cols-8 gap-x-2 w-max">
-				<For each={itemDisplayList()}>
-					{(item, index) => <Item item={item} index={index()} />}
-				</For>
+				<For each={items}>{(item) => <Item item={item} />}</For>
 			</ul>
 		</section>
 	);
