@@ -6,8 +6,10 @@ import { Tracker } from '../../components/Tracker';
 const { width } = imageSize('tracker-data/images/maps/johto_kanto.png');
 import { prisma } from '../../db/client';
 import { getItemData } from '../../lib/item-data';
+import Layout from '../../layouts/Layout.astro';
+import { appRouter } from '../../trpc/router/_index';
 
-const IMG_WIDTH = 600;
+const IMG_WIDTH = 800;
 const POS_MOD = IMG_WIDTH / width!;
 
 let { roomId: origRoomId } = Astro.params as { roomId: string };
@@ -28,7 +30,7 @@ similarChars.forEach(([oldChar, newChar]) => {
 /*Astro.url.pathname = `/room/${roomId}`;*/
 if (roomId !== origRoomId) return Astro.redirect(`/room/${roomId}`);
 
-const items = getItemData()
+const items = getItemData();
 
 const room = await prisma.room.findFirst({ where: { id: roomId } });
 if (!room) return Astro.redirect(`/?error=${roomId}`);
@@ -38,13 +40,22 @@ const user = await prisma.user.findUnique({ where: { id: userId } });
 if (!user) return Astro.redirect(`/?userError=${userId}`);
 
 const locations = await prisma.location.findMany({ where: { roomId } });
+
+const trpcCaller = appRouter.createCaller({ prisma, userId, roomId });
+const users = await trpcCaller.user.getUsers();
+
+const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 ---
 
-<div class="grid gap-8">
-	<p>
-		{user.name}
-	</p>
-	<Tracker client:load items={items} locations={locations} positionModifier={POS_MOD}>
+<Layout title="Crystal Item Tracker">
+	<Tracker
+		client:load
+		items={items}
+		locations={locations}
+		users={users}
+		mapWidth={IMG_WIDTH}
+		webRtcRoomId={webRtcRoomId}
+		positionModifier={POS_MOD}>
 		<Image
 			class="inset-0 block"
 			src={johtoKanto}
@@ -53,4 +64,4 @@ const locations = await prisma.location.findMany({ where: { roomId } });
 			hidden
 		/>
 	</Tracker>
-</div>
+</Layout>

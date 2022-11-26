@@ -11,7 +11,9 @@ import {
 import type { inferRouterOutputs } from '@trpc/server';
 import type { AppRouter } from '../trpc/router/_index';
 
-type Checks = inferRouterOutputs<AppRouter>['checks']['getAllForLocation'];
+export type Checks = NonNullable<
+	inferRouterOutputs<AppRouter>['checks']['getAllForLocation']['checks']
+>[number];
 
 const [selectedItem, setSelectedItem] = selectedItemSignal;
 
@@ -34,7 +36,6 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				checkId,
 				locationId,
 			}),
-		mutationKey: ['updateItem'],
 		onSettled: () => {
 			queryClient.invalidateQueries(['checks', locationId]);
 		},
@@ -50,7 +51,7 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				checkId,
 				locationId,
 			}),
-		mutationKey: ['updateItem'],
+		meta: { queryKey: ['checks'] },
 		onMutate: async (newItemId) => {
 			setItemData(
 				newItemId !== undefined ? getItemData()[newItemId] : undefined
@@ -128,8 +129,8 @@ export const CheckList = () => {
 		() =>
 			client.checks.getAllForLocation.query({
 				locationId: currentLocation()!.id,
-			}),
-		{ refetchInterval: 1000 }
+			})
+		//{ refetchInterval: 1000 }
 	);
 
 	return (

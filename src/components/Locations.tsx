@@ -51,27 +51,25 @@ export const LocationsOnMap: Component<Props> = ({
 		setCurrentLocation(location);
 	};
 	return (
-		<>
-			<ul>
-				<For each={locations}>
-					{(location) => {
-						if (location.name === 'New Bark Town') setCurrentLocation(location);
-						return (
-							<li
-								class="absolute w-4 h-4 -ml-2 -mt-2"
-								style={{
-									left: `${location.x * positionModifier}px`,
-									top: `${location.y * positionModifier}px`,
-								}}>
-								<LocationDot
-									location={location}
-									setLocation={setNewLocation(location)}
-								/>
-							</li>
-						);
-					}}
-				</For>
-			</ul>
-		</>
+		<ul>
+			<For each={locations}>
+				{(location) => {
+					if (location.name === 'New Bark Town') setCurrentLocation(location);
+					return (
+						<li
+							class="absolute w-4 h-4 -ml-2 -mt-2"
+							style={{
+								left: `${location.x * positionModifier}px`,
+								top: `${location.y * positionModifier}px`,
+							}}>
+							<LocationDot
+								location={location}
+								setLocation={setNewLocation(location)}
+							/>
+						</li>
+					);
+				}}
+			</For>
+		</ul>
 	);
 };

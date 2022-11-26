@@ -18,6 +18,7 @@
 		"@fontsource/concert-one": "^4.5.9",
 		"@fontsource/nunito-sans": "^4.5.10",
 		"@fontsource/press-start-2p": "^4.5.11",
+		"@liveblocks/client": "^0.19.2",
 		"@prisma/client": "4.6.1",
 		"@tanstack/solid-query": "^4.15.1",
 		"@trpc/client": "10.0.0-rc.8",
@@ -29,6 +30,8 @@
 		"solid-js": "^1.4.3",
 		"superjson": "^1.11.0",
 		"tailwindcss": "^3.0.24",
+		"y-webrtc": "^10.2.3",
+		"yjs": "^13.5.42",
 		"zod": "^3.19.1"
 	},
 	"prisma": {

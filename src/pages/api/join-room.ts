@@ -28,7 +28,7 @@ export const post = async ({
 	// 1.d if old name is different from new name, ask which one the user would like to user
 	// 2 create user
 
-	let userId = cookies.get('userId').value;
+	let userId = cookies.get(roomId).value;
 	if (userId) {
 		const user = await prisma.user.findFirst({
 			where: {
@@ -56,6 +56,11 @@ export const post = async ({
 		);
 	}
 
-	cookies.set('userId', userId, { httpOnly: true });
+	console.log(roomId, userId);
+	cookies.set(roomId, userId, {
+		maxAge: 60 * 60 * 24 /* 1 day */,
+		path: '/',
+		httpOnly: true,
+	});
 	return redirect(`/room/${roomId}`, 302);
 };
