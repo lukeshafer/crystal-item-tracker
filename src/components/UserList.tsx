@@ -22,10 +22,15 @@ export const UserList = ({ users: initialUsers }: UserProps) => {
 		}
 	);
 	return (
-		<ul>
+		<ul class="grid p-3 w-60 gap-4 content-start">
 			<For each={users()}>
 				{(user) => (
-					<li style={{ color: user.isCurrentUser ? 'red' : 'white' }}>
+					<li
+						class="px-4 py-2 h-16 flex items-center text-xl font-sans text-white w-full"
+						classList={{
+							'bg-blue-900': user.isCurrentUser,
+							'bg-slate-900': !user.isCurrentUser,
+						}}>
 						{user.name}
 					</li>
 				)}

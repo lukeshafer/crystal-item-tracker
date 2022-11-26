@@ -31,6 +31,9 @@ export const userRouter = router({
 			})
 		);
 
-		return userData;
+		// Sort moves current user to the top of their list
+		return userData.sort((a, b) =>
+			a.isCurrentUser ? -1 : b.isCurrentUser ? 1 : 0
+		);
 	}),
 });

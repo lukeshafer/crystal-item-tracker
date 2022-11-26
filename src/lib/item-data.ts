@@ -2,7 +2,28 @@ import { z } from 'zod';
 import itemData from '../../tracker-data/items/items.json';
 import badgeData from '../../tracker-data/items/badges.json';
 
-const fullItemData = [...itemData, ...badgeData];
+const markerData = [
+	{
+		name: 'Money Item',
+		type: 'marker',
+		img: 'images/other/trophy.png',
+		codes: 'marker',
+	},
+	{
+		name: 'TM',
+		type: 'marker',
+		img: 'images/chests/tm_hm_unopened.png',
+		codes: 'marker',
+	},
+	{
+		name: 'Healing',
+		type: 'marker',
+		img: 'images/other/elm.png',
+		codes: 'marker',
+	},
+];
+
+const fullItemData = [...itemData, ...badgeData, ...markerData];
 
 const itemsSchema = z
 	.array(
@@ -27,6 +48,14 @@ const itemsSchema = z
 						codes: z.string(),
 					})
 				),
+			}),
+			z.object({
+				name: z.string(),
+				type: z.literal('marker'),
+				img: z.string(),
+				img_mods: z.undefined(),
+				codes: z.string(),
+				stages: z.undefined(),
 			}),
 		])
 	)

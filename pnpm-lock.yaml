@@ -12,9 +12,11 @@ specifiers:
   '@tanstack/solid-query': ^4.15.1
   '@trpc/client': 10.0.0-rc.8
   '@trpc/server': 10.0.0-rc.8
+  '@types/core-js': ^2.5.5
   '@types/node': ^18.11.9
   astro: ^1.6.11
   astro-trpc: ^0.3.1
+  core-js: ^3.26.1
   image-size: ^1.0.2
   prettier: ^2.7.1
   prettier-plugin-astro: ^0.7.0
@@ -43,6 +45,7 @@ dependencies:
   '@types/node': 18.11.9
   astro: 1.6.11_odkjkoia5xunhxkdrka32ib6vi
   astro-trpc: 0.3.1_odkjkoia5xunhxkdrka32ib6vi
+  core-js: 3.26.1
   image-size: 1.0.2
   solid-js: 1.6.2
   superjson: 1.11.0
@@ -52,6 +55,7 @@ dependencies:
   zod: 3.19.1
 
 devDependencies:
+  '@types/core-js': 2.5.5
   prettier: 2.7.1
   prettier-plugin-astro: 0.7.0
   prettier-plugin-tailwindcss: 0.1.13_prettier@2.7.1
@@ -714,6 +718,10 @@ packages:
       '@babel/types': 7.20.2
     dev: false
 
+  /@types/core-js/2.5.5:
+    resolution: {integrity: sha512-C4vwOHrhsvxn7UFyk4NDQNUpgNKdWsT/bL39UWyD75KSEOObZSKa9mYDOCM5FGeJG2qtbG0XiEbUKND2+j0WOg==}
+    dev: true
+
   /@types/debug/4.1.7:
     resolution: {integrity: sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==}
     dependencies:
@@ -1234,6 +1242,11 @@ packages:
     engines: {node: '>=12.13'}
     dependencies:
       is-what: 4.1.7
+    dev: false
+
+  /core-js/3.26.1:
+    resolution: {integrity: sha512-21491RRQVzUn0GGM9Z1Jrpr6PNPxPi+Za8OM9q4tksTSnlbXXGKK1nXNg/QvwFYettXvSX6zWKCtHHfjN4puyA==}
+    requiresBuild: true
     dev: false
 
   /create-require/1.1.1:

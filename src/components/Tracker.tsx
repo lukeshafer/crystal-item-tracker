@@ -92,30 +92,33 @@ export const Tracker: Component<Props> = ({
 	//}
 	//});
 	//});
-	queryClient.setQueryData(['testping'], () => Promise.resolve('ping!'));
 
 	setItemData(items);
 	return (
 		<QueryClientProvider client={queryClient}>
 			<main
-				class="p-4 grid grid-cols-2 grid-rows-2 justify-items-center"
+				class="p-4 grid justify-items-center gap-8 max-w-6xl"
 				onContextMenu={(e) => {
 					e.preventDefault();
 					setSelectedItem();
 				}}>
-				<section
-					id="map"
-					class="col-span-2 relative h-min block bg-gray-900"
-					style={{ width: `${mapWidth}px` }}>
-					{children}
-					<LocationsOnMap
-						locations={locations}
-						positionModifier={positionModifier}
-					/>
-				</section>
-				<UserList users={users}></UserList>
-				<ItemList items={items} />
-				<CheckList />
+				<div class="flex justify-between w-full flex-wrap">
+					<section
+						id="map"
+						class="relative block bg-gray-900"
+						style={{ width: `${mapWidth}px` }}>
+						{children}
+						<LocationsOnMap
+							locations={locations}
+							positionModifier={positionModifier}
+						/>
+					</section>
+					<UserList users={users}></UserList>
+				</div>
+				<div class="flex justify-between w-full flex-wrap">
+					<CheckList />
+					<ItemList items={items} />
+				</div>
 			</main>
 		</QueryClientProvider>
 	);
