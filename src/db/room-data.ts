@@ -1,3 +1,4 @@
+import type { ItemType } from '@prisma/client';
 import { getItemData } from '../lib/item-data';
 import { getLocations } from '../lib/location-data';
 import { prisma } from './client';
@@ -51,8 +52,23 @@ export const initRoom = async () => {
 	const items = getItemData();
 	const locations = [...getLocations().values()];
 	let step = 'item';
+	let itemData;
 	try {
-		const itemData = items.map(({ id }) => ({ id, roomId: roomId }));
+		itemData = items.map(({ id, name, img, img_mods = null, codes }) => {
+			let type: ItemType;
+			if (codes === 'marker') type = 'MARKER';
+			else if (['TM', 'HM'].includes(name.substring(0, 2))) type = 'HM';
+			else if (name.toLowerCase().includes('badge')) type = 'BADGE';
+			else type = 'GENERAL';
+			return {
+				roomId,
+				id,
+				name,
+				img,
+				img_mods,
+				type,
+			};
+		});
 		console.log('Item data:', itemData);
 		await prisma.item.createMany({
 			data: itemData,
@@ -82,6 +98,14 @@ export const initRoom = async () => {
 		await prisma.room.delete({ where: { id: roomId } });
 		console.error(err);
 		console.error(`Error creating room at ${step} step.`, { roomId });
+		if (step === 'item') {
+			const pastIds: number[] = [];
+			itemData?.forEach((item) => {
+				if (pastIds.includes(item.id))
+					console.log('Issue with item id', item.id);
+				pastIds.push(item.id);
+			});
+		}
 		throw err;
 	}
 
@@ -109,6 +133,9 @@ export const initUser = async ({
 	const roomItems = await prisma.item.findMany({
 		where: {
 			roomId: room.id,
+			NOT: {
+				type: 'MARKER',
+			},
 		},
 	});
 

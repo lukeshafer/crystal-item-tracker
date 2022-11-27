@@ -9,11 +9,13 @@ import {
 import { z } from 'zod';
 
 import { LocationsOnMap, type Props as LocationProps } from './Locations';
-import { ItemList, selectedItemSignal } from '../components/ItemList';
+import {
+	ItemList,
+	selectedItemSignal,
+	type ItemFromApi,
+} from '../components/ItemList';
 import { CheckList } from './CheckList';
-import { setItemData } from '../lib/state';
 import { type User, UserList } from './UserList';
-import type { Item } from '../lib/item-data';
 
 const [, setSelectedItem] = selectedItemSignal;
 
@@ -41,7 +43,7 @@ export const HoverBox = ({
 };
 
 export type Props = {
-	items: Item[];
+	items: ItemFromApi[];
 	mapWidth: number;
 	users: User[];
 	webRtcRoomId: string;
@@ -55,8 +57,8 @@ export const Tracker: Component<Props> = ({
 	mapWidth,
 	items,
 	users,
-	webRtcRoomId,
-}: Props) => {
+}: //webRtcRoomId,
+Props) => {
 	const queryClient = new QueryClient();
 
 	//***UNCOMMENT BELOW BLOCK FOR P2P CONNECTIONS***//
@@ -93,7 +95,6 @@ export const Tracker: Component<Props> = ({
 	//});
 	//});
 
-	setItemData(items);
 	return (
 		<QueryClientProvider client={queryClient}>
 			<main

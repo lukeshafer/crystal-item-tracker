@@ -30,7 +30,7 @@ similarChars.forEach(([oldChar, newChar]) => {
 /*Astro.url.pathname = `/room/${roomId}`;*/
 if (roomId !== origRoomId) return Astro.redirect(`/room/${roomId}`);
 
-const items = getItemData();
+/*const items = getItemData();*/
 
 const room = await prisma.room.findFirst({ where: { id: roomId } });
 if (!room) return Astro.redirect(`/?error=${roomId}`);
@@ -43,6 +43,7 @@ const locations = await prisma.location.findMany({ where: { roomId } });
 
 const trpcCaller = appRouter.createCaller({ prisma, userId, roomId });
 const users = await trpcCaller.user.getUsers();
+const items = await trpcCaller.item.getAll();
 
 const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 ---

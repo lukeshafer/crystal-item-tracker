@@ -1,8 +1,28 @@
-import { createResource, createSignal, For, onMount, Show } from 'solid-js';
+import { createSignal, For, onMount, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
-import type { Item } from '../lib/item-data';
+import { createStore } from 'solid-js/store';
 import { HoverBox } from './Tracker';
 import { client } from '../lib/trpc-client';
+import {
+	createMutation,
+	createQuery,
+	useQueryClient,
+} from '@tanstack/solid-query';
+import type { inferRouterOutputs } from '@trpc/server';
+import type { AppRouter } from '../trpc/router/_index';
+
+export type ItemFromApi =
+	inferRouterOutputs<AppRouter>['item']['getAll'][number];
+
+const [itemListState, setItemListState] = createStore<ItemFromApi[]>([]);
+export const itemList = {
+	getItem: (id: number) => itemListState.find((item) => item.id === id),
+	setAtIndex: (id: number, newItem: ItemFromApi) => {
+		setItemListState((list) =>
+			list.map((item) => (item.id === id ? newItem : item))
+		);
+	},
+};
 
 export const selectedItemSignal = createSignal<{
 	src: string;
@@ -12,7 +32,7 @@ export const selectedItemSignal = createSignal<{
 const [selectedItem, setSelectedItem] = selectedItemSignal;
 
 export interface Props {
-	items: Item[];
+	items: ItemFromApi[];
 }
 
 const MouseItem = ({ src }: { src: string }) => {
@@ -37,22 +57,44 @@ const MouseItem = ({ src }: { src: string }) => {
 	);
 };
 
-const Item = ({ item, isHM }: { item: Item; isHM?: boolean }) => {
+const Item = ({ item, isHM }: { item: ItemFromApi; isHM?: boolean }) => {
 	isHM ??= false;
+	const queryClient = useQueryClient();
 	let tooltip: HTMLDivElement;
 	const { name, img, id } = item;
-	const [collectedStatus, { mutate }] = createResource(() =>
-		client.item.getCollectedStatus.query({ itemId: id })
+	const isCollectedQuery = createQuery(
+		() => ['item.getCollectedStatus', id.toString()],
+		() => client.item.getCollectedStatus.query({ itemId: id }),
+		{ initialData: false }
 	);
+
+	const statusMutation = createMutation({
+		mutationFn: (status: boolean) =>
+			client.item.updateCollectedStatus.mutate({
+				itemId: id,
+				isCollected: status,
+			}),
+		meta: { queryKey: ['item.getCollectedStatus', id.toString()] },
+		onMutate: (status) => {
+			queryClient.setQueryData(
+				['item.getCollectedStatus', id.toString()],
+				status
+			);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries(['item.getCollectedStatus', id.toString()]);
+		},
+	});
 
 	const updateCollectedStatus = (status: boolean) => {
 		setSelectedItem(status ? { id, src: img, name } : undefined);
-		client.item.updateCollectedStatus.mutate({
-			itemId: id,
-			isCollected: status,
-		});
-		mutate(status);
+		statusMutation.mutate(status);
 	};
+
+	const itemCheckInfo = createQuery(
+		() => ['item.getCheckInfo', item.id],
+		() => client.item.getCheckInfo.query({ itemId: id })
+	);
 
 	const showTooltip = () => (tooltip.style.visibility = 'visible');
 	const hideTooltip = () => (tooltip.style.visibility = 'hidden');
@@ -76,7 +118,7 @@ const Item = ({ item, isHM }: { item: Item; isHM?: boolean }) => {
 					class="w-10 block"
 					alt=""
 					style={{
-						filter: collectedStatus()
+						filter: isCollectedQuery.data
 							? 'none'
 							: 'grayscale(100%) brightness(50%)',
 					}}
@@ -84,7 +126,14 @@ const Item = ({ item, isHM }: { item: Item; isHM?: boolean }) => {
 				<Show when={isHM}>
 					<p class="absolute bottom-0 left-0">{name.split(' ')[0]}</p>
 				</Show>
-				<HoverBox ref={tooltip!}>{name}</HoverBox>
+				<HoverBox ref={tooltip!}>
+					<p>{name}</p>
+					<Show when={itemCheckInfo.data?.locationName}>
+						<i>Found at {itemCheckInfo.data?.locationName}</i>
+						<br />
+						<i>{itemCheckInfo.data?.checkName}</i>
+					</Show>
+				</HoverBox>
 				<Show when={selectedItem()?.id === id}>
 					<MouseItem src={'/' + img} />
 				</Show>
@@ -93,7 +142,7 @@ const Item = ({ item, isHM }: { item: Item; isHM?: boolean }) => {
 	);
 };
 
-const Marker = ({ item }: { item: Item }) => {
+const Marker = ({ item }: { item: ItemFromApi }) => {
 	const { name, img, id } = item;
 	return (
 		<li class="w-max">
@@ -113,21 +162,13 @@ const Marker = ({ item }: { item: Item }) => {
 	);
 };
 
-export const ItemList = ({ items }: { items: Item[] }) => {
-	const markers = items.filter((item) => item.codes === 'marker');
-	const hms = items.filter(
-		(item) =>
-			['TM', 'HM'].includes(item.name.substring(0, 2)) &&
-			!markers.includes(item)
-	);
-	const badges = items.filter(
-		(item) =>
-			item.name.toLowerCase().includes('badge') &&
-			![...hms, ...markers].includes(item)
-	);
-	const otherItems = items.filter(
-		(item) => ![...badges, ...hms, ...markers].includes(item)
-	);
+export const ItemList = ({ items }: { items: ItemFromApi[] }) => {
+	setItemListState(items);
+
+	const otherItems = items.filter((item) => item.type === 'GENERAL');
+	const hmItems = items.filter((item) => item.type === 'HM');
+	const badgeItems = items.filter((item) => item.type === 'BADGE');
+	const markers = items.filter((item) => item.type === 'MARKER');
 
 	return (
 		<section class="grid gap-4 content-start">
@@ -135,10 +176,10 @@ export const ItemList = ({ items }: { items: Item[] }) => {
 				<For each={otherItems}>{(item) => <Item item={item} />}</For>
 			</ul>
 			<ul class="grid grid-cols-8 gap-x-2 w-max">
-				<For each={hms}>{(item) => <Item item={item} isHM />}</For>
+				<For each={hmItems}>{(item) => <Item item={item} isHM />}</For>
 			</ul>
 			<ul class="grid grid-cols-8 gap-x-2 w-max">
-				<For each={badges}>{(item) => <Item item={item} />}</For>
+				<For each={badgeItems}>{(item) => <Item item={item} />}</For>
 			</ul>
 			<ul class="flex gap-x-2 w-full justify-evenly">
 				<For each={markers}>{(item) => <Marker item={item} />}</For>

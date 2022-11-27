@@ -1,7 +1,30 @@
+import type { Item } from '@prisma/client';
 import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
 
 export const itemsRouter = router({
+	getAll: publicProcedure.query(async ({ ctx }) => {
+		const { prisma, roomId } = ctx;
+		try {
+			const result = await prisma.item.findMany({
+				where: {
+					roomId,
+				},
+				select: {
+					id: true,
+					roomId: true,
+					img: true,
+					name: true,
+					type: true,
+					img_mods: true,
+				},
+			});
+			return result;
+		} catch (err) {
+			console.error(err);
+			return [] as Item[];
+		}
+	}),
 	updateCollectedStatus: publicProcedure
 		.input(
 			z.object({
@@ -43,17 +66,28 @@ export const itemsRouter = router({
 				return false;
 			}
 		}),
-	getItemData: protectedProcedure
+	getCheckInfo: protectedProcedure
 		.input(z.object({ itemId: z.number() }))
 		.query(async ({ input, ctx }) => {
 			const { roomId, prisma } = ctx;
 			try {
-				const data = await prisma.item.findUnique({
+				const data = await prisma.check.findFirst({
 					where: {
-						id_roomId: { id: input.itemId, roomId },
+						itemId: input.itemId,
+						roomId,
+					},
+					include: {
+						location: true,
 					},
 				});
-				return data;
+				if (data)
+					return {
+						checkId: data.id,
+						checkName: data.name,
+						locationId: data.locationId,
+						locationName: data.location.name,
+					};
+				else return null;
 			} catch (err) {
 				console.error(err);
 				return null;

@@ -1,8 +1,7 @@
 import { createSignal, For, Match, Show, Switch } from 'solid-js';
 import { currentLocationSignal } from './Locations';
-import { selectedItemSignal } from './ItemList';
+import { itemList, selectedItemSignal } from './ItemList';
 import { client } from '../lib/trpc-client';
-import { getItemData } from '../lib/state';
 import {
 	createMutation,
 	createQuery,
@@ -22,13 +21,16 @@ interface ItemCheckProps {
 	checkId: number;
 	completed: boolean;
 	locationId: number;
-	itemId: number | null;
 }
 const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 	const queryClient = useQueryClient();
-	const { name, checkId, completed, locationId, itemId } = value;
+	const { name, checkId, completed, locationId } = value;
 
 	const [isChecked, setIsChecked] = createSignal(completed);
+	const checkboxQuery = createQuery(
+		() => ['checks.getCompleted', locationId.toString(), checkId.toString()],
+		() => client.checks.getCompleted.query({ checkId, locationId })
+	);
 	const checkboxMutation = createMutation({
 		mutationFn: (isChecked: boolean) =>
 			client.checks.setCompleted.mutate({
@@ -37,12 +39,17 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				locationId,
 			}),
 		onSettled: () => {
-			queryClient.invalidateQueries(['checks', locationId]);
+			queryClient.invalidateQueries([
+				'checks.getCompleted',
+				locationId.toString(),
+				checkId.toString(),
+			]);
 		},
 	});
 
-	const [itemData, setItemData] = createSignal(
-		itemId !== null ? getItemData()[itemId] : undefined
+	const checkItemQuery = createQuery(
+		() => ['checks.getItem', locationId.toString(), checkId.toString()],
+		() => client.checks.getItem.query({ checkId, locationId })
 	);
 	const checkItemMutation = createMutation({
 		mutationFn: (itemId?: number) =>
@@ -52,13 +59,25 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				locationId,
 			}),
 		meta: { queryKey: ['checks'] },
-		onMutate: async (newItemId) => {
-			setItemData(
-				newItemId !== undefined ? getItemData()[newItemId] : undefined
+		onMutate(itemId) {
+			queryClient.setQueryData(
+				['checks.getItem', locationId.toString(), checkId.toString()],
+				itemId
+					? {
+							itemId,
+							itemName: itemList.getItem(itemId)?.name,
+							itemImg: itemList.getItem(itemId)?.img,
+					  }
+					: undefined
 			);
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries(['checks', locationId]);
+			queryClient.invalidateQueries([
+				'checks.getItem',
+				locationId.toString(),
+				checkId.toString(),
+			]);
+			queryClient.invalidateQueries(['item.getCheckInfo']);
 		},
 	});
 
@@ -110,11 +129,11 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				classList={{ 'text-gray-500': isChecked() }}>
 				{name}
 			</label>
-			<Show when={itemData()}>
+			<Show when={checkItemQuery.isSuccess && checkItemQuery.data}>
 				<img
-					src={'/' + itemData()!.img}
+					src={'/' + checkItemQuery.data!.itemImg}
 					class="w-6 h-6"
-					alt={itemData()!.name}
+					alt={checkItemQuery.data!.itemName}
 				/>
 			</Show>
 		</li>
@@ -130,7 +149,7 @@ export const CheckList = () => {
 			client.checks.getAllForLocation.query({
 				locationId: currentLocation()!.id,
 			})
-		//{ refetchInterval: 1000 }
+		//{ staleTime: Infinity }
 	);
 
 	return (
@@ -152,7 +171,6 @@ export const CheckList = () => {
 											locationId: currentLocation()!.id,
 											completed: check.completed,
 											checkId: check.checkId,
-											itemId: check.itemId,
 										}}
 									/>
 								)}

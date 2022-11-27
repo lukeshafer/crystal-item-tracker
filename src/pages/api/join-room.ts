@@ -22,12 +22,6 @@ export const post = async ({
 			{ status: 400, statusText: 'userName is required.' }
 		);
 
-	// 1. check for userId cookie
-	// 1.b if cookie exists, check if that userId is already in this room
-	// 1.c if userId is in the room, join the room as that user.
-	// 1.d if old name is different from new name, ask which one the user would like to user
-	// 2 create user
-
 	let userId = cookies.get(roomId).value;
 	if (userId) {
 		const user = await prisma.user.findFirst({
@@ -42,6 +36,9 @@ export const post = async ({
 	}
 
 	try {
+		const room = await prisma.room.findUnique({ where: { id: roomId } });
+		if (!room) throw new Error();
+		if (room.status === 'PRIVATE') return redirect(`/?error=${roomId}`);
 		userId = await initUser({ name: userName, roomId });
 	} catch (err) {
 		if (err instanceof Error)

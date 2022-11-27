@@ -62,9 +62,9 @@ const itemsSchema = z
 	.transform((items) =>
 		items
 			.reduce((accum, item) => {
-				const prevIndex = accum.at(-1)?.id ?? -1;
+				const prevIndex = accum.at(-1)?.id ?? 0;
 				let index = prevIndex + 1;
-				const { name, codes, img, stages } = item;
+				const { name, codes, img, stages, img_mods } = item;
 				if (stages) {
 					const returnStages = stages.map((stage, stageIndex) => ({
 						name,
@@ -73,12 +73,10 @@ const itemsSchema = z
 					}));
 					return [...accum, ...returnStages];
 				}
-				return [...accum, { name, codes, img, id: index }];
-			}, [] as { id: number; name: string; codes: string; img: string }[])
+				return [...accum, { name, codes, img, id: index, img_mods }];
+			}, [] as { id: number; name: string; codes: string; img: string; img_mods?: string | undefined }[])
 			.flat()
 	);
 
 const items = itemsSchema.parse(fullItemData);
 export const getItemData = () => items.slice();
-
-export type Item = typeof items[number];

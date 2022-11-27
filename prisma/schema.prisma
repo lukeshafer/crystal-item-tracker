@@ -19,8 +19,14 @@ model Room {
   locations Location[] 
   items     Item[] 
   users     User[]
+  status    RoomStatus?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum RoomStatus {
+  PUBLIC
+  PRIVATE
 }
 
 model User {
@@ -29,6 +35,7 @@ model User {
   items UserItem[]
   checks UserCheck[]
   roomId String
+  preferences String?
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,10 +93,21 @@ model Item {
   room              Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   foundAtCheck      Check?
   userItemInstances UserItem[]
+  img               String
+  name              String
+  type              ItemType
+  img_mods          String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@id([id, roomId])
+}
+
+enum ItemType {
+  GENERAL
+  HM
+  BADGE
+  MARKER
 }
 
 model UserItem {

@@ -42,6 +42,36 @@ export const checkRouter = router({
 				return { status: 500, error: 'Error fetching location' };
 			}
 		}),
+	getCompleted: protectedProcedure
+		.input(
+			z.object({
+				checkId: z.number(),
+				locationId: z.number(),
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { roomId, userId, prisma } = ctx;
+			const { checkId, locationId } = input;
+			try {
+				const result = await prisma.userCheck.findUnique({
+					where: {
+						userId_checkId_roomId_checkLocationId: {
+							userId,
+							checkId,
+							roomId,
+							checkLocationId: locationId,
+						},
+					},
+					select: {
+						completed: true,
+					},
+				});
+				return result;
+			} catch (err) {
+				console.error(err);
+				return { status: 500, error: 'Error retrieving check' };
+			}
+		}),
 	setCompleted: protectedProcedure
 		.input(
 			z.object({
@@ -90,10 +120,10 @@ export const checkRouter = router({
 					where: { id_roomId_locationId: { id: checkId, locationId, roomId } },
 					data: { itemId: itemId ?? null },
 				});
-				return result.itemId;
+				return result.itemId ?? null;
 			} catch (err) {
 				console.error(err);
-				return undefined;
+				return null;
 			}
 		}),
 	getItem: protectedProcedure
@@ -103,18 +133,26 @@ export const checkRouter = router({
 				locationId: z.number(),
 			})
 		)
-		.mutation(async ({ input, ctx }) => {
+		.query(async ({ input, ctx }) => {
 			const { roomId, prisma } = ctx;
 			const { checkId, locationId } = input;
 			try {
 				const result = await prisma.check.findUnique({
 					where: { id_roomId_locationId: { id: checkId, locationId, roomId } },
-					select: { itemId: true },
+					include: {
+						itemFound: true,
+					},
 				});
-				return result!.itemId;
+				if (result?.itemFound)
+					return {
+						itemId: result.itemFound.id,
+						itemName: result.itemFound.name,
+						itemImg: result.itemFound.img,
+					};
+				return null;
 			} catch (err) {
 				console.error(err);
-				return undefined;
+				return null;
 			}
 		}),
 });
