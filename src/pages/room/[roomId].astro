@@ -1,6 +1,5 @@
 ---
 import { Image } from '@astrojs/image/components';
-import johtoKanto from '../../../tracker-data/images/maps/johto_kanto.png';
 import imageSize from 'image-size';
 import { Tracker } from '../../components/Tracker';
 const { width } = imageSize('tracker-data/images/maps/johto_kanto.png');
@@ -55,9 +54,9 @@ const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 		mapWidth={IMG_WIDTH}
 		webRtcRoomId={webRtcRoomId}
 		positionModifier={POS_MOD}>
-		<Image
+		<img
 			class="inset-0 block"
-			src={johtoKanto}
+			src="../../../tracker-data/images/maps/johto_kanto.png"
 			alt=""
 			width={IMG_WIDTH}
 			hidden
