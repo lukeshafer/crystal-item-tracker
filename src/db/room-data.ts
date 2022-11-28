@@ -120,50 +120,57 @@ export const initUser = async ({
 	roomId: string;
 }) => {
 	// verify roomId is valid
-	const room = await prisma.room.findFirst({ where: { id: roomId } });
-	if (!room) throw new Error('Invalid room ID');
+	try {
+		const room = await prisma.room.findFirst({ where: { id: roomId } });
+		if (!room) throw new Error('Invalid room ID');
 
-	const user = await prisma.user.create({
-		data: {
-			name,
-			roomId: room.id,
-		},
-	});
-
-	const roomItems = await prisma.item.findMany({
-		where: {
-			roomId: room.id,
-			NOT: {
-				type: 'MARKER',
+		const user = await prisma.user.create({
+			data: {
+				name,
+				roomId: room.id,
 			},
-		},
-	});
+		});
 
-	const userItems = await prisma.userItem.createMany({
-		data: roomItems.map((item) => ({
-			itemId: item.id,
-			roomId: room.id,
-			userId: user.id,
-		})),
-	});
+		const roomItems = await prisma.item.findMany({
+			where: {
+				roomId: room.id,
+				NOT: {
+					type: 'MARKER',
+				},
+			},
+		});
 
-	const roomChecks = await prisma.check.findMany({
-		where: {
-			roomId: room.id,
-		},
-	});
+		const userItems = await prisma.userItem.createMany({
+			data: roomItems.map((item) => ({
+				itemId: item.id,
+				roomId: room.id,
+				userId: user.id,
+			})),
+		});
 
-	const userChecks = await prisma.userCheck.createMany({
-		data: roomChecks.map((check) => ({
-			userId: user.id,
-			roomId: room.id,
-			checkLocationId: check.locationId,
-			checkId: check.id,
-		})),
-	});
+		const roomChecks = await prisma.check.findMany({
+			where: {
+				roomId: room.id,
+			},
+		});
 
-	if (userItems && userChecks) return user.id;
-	else {
-		throw new Error('Error creating user.');
+		const userChecks = await prisma.userCheck.createMany({
+			data: roomChecks.map((check) => ({
+				userId: user.id,
+				roomId: room.id,
+				checkLocationId: check.locationId,
+				checkId: check.id,
+			})),
+		});
+
+		if (userItems && userChecks) return user.id;
+		else {
+			console.error('error creating user!');
+			throw new Error('Error creating user.');
+		}
+	} catch (err) {
+		console.error('Error while creating user.');
+		console.error(err);
+		throw err;
 	}
 };

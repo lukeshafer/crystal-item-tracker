@@ -153,7 +153,7 @@ export const CheckList = () => {
 	);
 
 	return (
-		<section class="p-4 h-full bg-gray-800 text-white">
+		<section class="h-full bg-gray-800 text-white">
 			<Show when={currentLocation() !== undefined}>
 				<h2 class="text-3xl">{currentLocation()?.name}</h2>
 				<Switch>

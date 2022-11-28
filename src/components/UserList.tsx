@@ -22,12 +22,10 @@ export const userList = users;
 const ColorSelector = ({ onSelect }: { onSelect(): void }) => {
 	const queryClient = useQueryClient();
 	const colors = new Map([
-		['red', ['bg-pink-600', 'bg-rose-600', 'bg-red-600']],
-		['yellow', ['bg-orange-600', 'bg-amber-600', 'bg-yellow-600']],
-		['green', ['bg-green-600', 'bg-emerald-600', 'bg-teal-600']],
-		['blue', ['bg-sky-600', 'bg-blue-600', 'bg-indigo-600']],
-		['purple', ['bg-violet-600', 'bg-purple-600', 'bg-fuchsia-600']],
-		['gray', ['bg-stone-600', 'bg-zinc-600', 'bg-slate-600']],
+		['red', ['#de1429', '#de3214', '#de145b']],
+		['yellow', ['#9b5b0d', '#bc9613', '#c3e500']],
+		['green', ['#3b840b', '#0e840b', '#0b8444']],
+		['blue', ['#0b4a84', '#0b0d84', '#630b84']],
 	]);
 
 	const setPreferencesMutation = createMutation({
@@ -51,7 +49,7 @@ const ColorSelector = ({ onSelect }: { onSelect(): void }) => {
 	);
 
 	const setColor = (name: string, color: string) => {
-		setPreferencesMutation.mutate({ colorClass: color, colorName: name });
+		setPreferencesMutation.mutate({ colorValue: color, colorName: name });
 		onSelect();
 	};
 
@@ -65,7 +63,8 @@ const ColorSelector = ({ onSelect }: { onSelect(): void }) => {
 								{(color) => (
 									<button
 										onClick={() => setColor(name, color)}
-										class={`w-16 h-16 ${color}`}></button>
+										style={{ background: color }}
+										class={`w-16 h-16`}></button>
 								)}
 							</For>
 						</Show>
@@ -88,14 +87,13 @@ export const UserList = ({ users: initialUsers }: UserProps) => {
 		}
 	);
 	const [isSelectorShown, setIsSelectorShown] = createSignal(false);
-	createEffect(() => console.log(isSelectorShown()));
 	return (
 		<ul class="grid p-3 w-60 gap-4 content-start">
 			<For each={users()}>
 				{(user) => (
 					<li
 						class="px-4 py-2 h-16 flex items-center justify-between text-xl font-sans text-white w-full relative"
-						classList={{ [user.preferences.colorClass ?? '']: true }}>
+						style={{ background: user.preferences.colorValue }}>
 						{user.name}
 						<Show when={user.isCurrentUser}>
 							<button onClick={() => setIsSelectorShown(!isSelectorShown())}>

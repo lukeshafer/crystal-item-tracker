@@ -1,7 +1,11 @@
 import { Component, createSignal, For, ParentProps } from 'solid-js';
 import { HoverBox } from './Tracker';
+
 import type { inferRouterOutputs } from '@trpc/server';
 import type { AppRouter } from '../trpc/router/_index';
+import { createQuery } from '@tanstack/solid-query';
+import { client } from '../lib/trpc-client';
+import { itemList } from './ItemList';
 
 type Location = Exclude<
 	inferRouterOutputs<AppRouter>['location']['getAll']['locations'],
@@ -20,13 +24,31 @@ interface LocationDotProps {
 	location: Location;
 	setLocation: () => void;
 }
+
 const LocationDot = ({ location, setLocation }: LocationDotProps) => {
+	const checksQuery = createQuery(
+		() => ['checks', location.id],
+		() =>
+			client.checks.getAllForLocation.query({
+				locationId: location.id,
+			})
+	);
+	const itemsAtLocation = () =>
+		checksQuery.data?.checks
+			?.filter((check) => check.itemId !== null)
+			.map((check) => check.itemId!) ?? [];
+
 	let tooltip: HTMLDivElement;
 	const showTooltip = () => (tooltip.style.visibility = 'visible');
 	const hideTooltip = () => (tooltip.style.visibility = 'hidden');
 	return (
 		<button
-			class="absolute inset-0 block w-full h-full bg-pink-400"
+			class="absolute inset-0 block w-full h-full"
+			//style={{
+			//animation: 'blink 1000ms infinite',
+			//'outline-color': 'blue',
+			//'animation-timing-function': 'steps(2,jump-none)',
+			//}}
 			classList={{
 				'bg-gray-400': currentLocation()?.name !== location.name,
 				'bg-pink-400': currentLocation()?.name === location.name,
@@ -38,7 +60,14 @@ const LocationDot = ({ location, setLocation }: LocationDotProps) => {
 			onClick={() => {
 				setLocation();
 			}}>
-			<HoverBox ref={tooltip!}>{location.name}</HoverBox>
+			<HoverBox ref={tooltip!}>
+				{location.name}
+				<For each={itemsAtLocation()}>
+					{(itemId) => (
+						<i class="text-sky-100 block">{itemList.getItem(itemId)?.name}</i>
+					)}
+				</For>
+			</HoverBox>
 		</button>
 	);
 };

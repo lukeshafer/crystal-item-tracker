@@ -30,14 +30,12 @@ similarChars.forEach(([oldChar, newChar]) => {
 /*Astro.url.pathname = `/room/${roomId}`;*/
 if (roomId !== origRoomId) return Astro.redirect(`/room/${roomId}`);
 
-/*const items = getItemData();*/
-
 const room = await prisma.room.findFirst({ where: { id: roomId } });
 if (!room) return Astro.redirect(`/?error=${roomId}`);
 
 let userId = Astro.cookies.get(roomId).value ?? '';
 const user = await prisma.user.findUnique({ where: { id: userId } });
-if (!user) return Astro.redirect(`/?userError=${userId}`);
+if (!user) return Astro.redirect(`/?error=${roomId}&userError=${userId}`);
 
 const locations = await prisma.location.findMany({ where: { roomId } });
 
@@ -66,3 +64,16 @@ const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 		/>
 	</Tracker>
 </Layout>
+
+<style>
+	@keyframes blink {
+		from {
+			outline-width: none;
+			outline-style: none;
+		}
+		to {
+			outline-width: 2px;
+			outline-style: solid;
+		}
+	}
+</style>

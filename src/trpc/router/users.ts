@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
 
-const userPreferencesSchema = z.object({
+export const userPreferencesSchema = z.object({
 	colorName: z.string().optional(),
-	colorClass: z.string().optional(),
+	colorValue: z.string().optional(),
 });
 
 export const userRouter = router({
@@ -50,22 +50,22 @@ export const userRouter = router({
 			a.isCurrentUser ? -1 : b.isCurrentUser ? 1 : 0
 		);
 	}),
-	getUserPreferences: protectedProcedure
-		.input(z.object({ userId: z.string().optional() }))
-		.mutation(async ({ input, ctx }) => {
-			const { roomId, userId: curUserId, prisma } = ctx;
-			const { userId = curUserId } = input;
-			const settingsString = JSON.stringify(input);
-			const response = await prisma.user.update({
-				where: {
-					id_roomId: { id: userId, roomId },
-				},
-				data: {
-					preferences: settingsString,
-				},
-			});
-			return response;
-		}),
+	//getUserPreferences: protectedProcedure
+	//.input(z.object({ userId: z.string().optional() }))
+	//.mutation(async ({ input, ctx }) => {
+	//const { roomId, userId: curUserId, prisma } = ctx;
+	//const { userId = curUserId } = input;
+	//const settingsString = JSON.stringify(input);
+	//const response = await prisma.user.update({
+	//where: {
+	//id_roomId: { id: userId, roomId },
+	//},
+	//data: {
+	//preferences: settingsString,
+	//},
+	//});
+	//return response;
+	//}),
 	setUserPreferences: protectedProcedure
 		.input(userPreferencesSchema)
 		.mutation(async ({ input, ctx }) => {

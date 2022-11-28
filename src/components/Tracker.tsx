@@ -34,7 +34,7 @@ export const HoverBox = ({
 				currentTarget.style.visibility = 'hidden';
 			}}
 			ref={tooltip!}
-			class={`absolute left-full top-full invisible z-10 bg-slate-900 text-white border border-white w-max ${
+			class={`absolute left-full top-full invisible z-10 bg-slate-900 text-white border border-white w-max p-2 ${
 				className ?? ''
 			}`}>
 			{children}
@@ -57,43 +57,43 @@ export const Tracker: Component<Props> = ({
 	mapWidth,
 	items,
 	users,
-}: //webRtcRoomId,
-Props) => {
+	webRtcRoomId,
+}: Props) => {
 	const queryClient = new QueryClient();
 
 	//***UNCOMMENT BELOW BLOCK FOR P2P CONNECTIONS***//
-	//const webRtcClient = createClient({
-	//publicApiKey: import.meta.env.PUBLIC_LIVEBLOCKS as string,
-	//});
-	//onMount(() => {
-	//const room: Room<
-	//{},
-	//LsonObject,
-	//BaseUserMeta,
-	//{ type: 'update'; queryKey: string[] }
-	//> = webRtcClient.enter(webRtcRoomId, { initialPresence: {} });
-	//queryClient.setDefaultOptions({
-	//mutations: {
-	//onSuccess() {
-	//const key = this.meta?.queryKey;
-	//const parsedKey = z.array(z.string()).safeParse(key);
-	//if (room && parsedKey.success) {
-	//room.broadcastEvent({
-	//type: 'update',
-	//queryKey: parsedKey.data,
-	//});
-	//}
-	//},
-	//},
-	//});
-	//room.subscribe('event', ({ event: { type, queryKey } }) => {
-	//switch (type) {
-	//case 'update':
-	//queryClient.invalidateQueries({ queryKey });
-	//break;
-	//}
-	//});
-	//});
+	const webRtcClient = createClient({
+		publicApiKey: import.meta.env.PUBLIC_LIVEBLOCKS as string,
+	});
+	onMount(() => {
+		const room: Room<
+			{},
+			LsonObject,
+			BaseUserMeta,
+			{ type: 'update'; queryKey: string[] }
+		> = webRtcClient.enter(webRtcRoomId, { initialPresence: {} });
+		queryClient.setDefaultOptions({
+			mutations: {
+				onSuccess() {
+					const key = this.meta?.queryKey;
+					const parsedKey = z.array(z.string()).safeParse(key);
+					if (room && parsedKey.success) {
+						room.broadcastEvent({
+							type: 'update',
+							queryKey: parsedKey.data,
+						});
+					}
+				},
+			},
+		});
+		room.subscribe('event', ({ event: { type, queryKey } }) => {
+			switch (type) {
+				case 'update':
+					queryClient.invalidateQueries({ queryKey });
+					break;
+			}
+		});
+	});
 
 	return (
 		<QueryClientProvider client={queryClient}>
@@ -116,9 +116,9 @@ Props) => {
 					</section>
 					<UserList users={users}></UserList>
 				</div>
-				<div class="flex justify-between w-full flex-wrap">
-					<CheckList />
+				<div class="flex gap-4 justify-start w-full flex-wrap">
 					<ItemList items={items} />
+					<CheckList />
 				</div>
 			</main>
 		</QueryClientProvider>

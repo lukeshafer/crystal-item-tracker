@@ -2,6 +2,21 @@ import type { APIContext } from 'astro';
 import { initUser } from '../../db/room-data';
 import { prisma } from '../../db/client';
 
+const correctRoomId = (origRoomId: string) => {
+	let roomId = origRoomId.toUpperCase();
+
+	const similarChars: [string, string][] = [
+		['O', '0'],
+		['I', '1'],
+		['L', '1'],
+		['S', '5'],
+	];
+
+	similarChars.forEach(([oldChar, newChar]) => {
+		roomId = roomId.replaceAll(oldChar, newChar);
+	});
+	return roomId;
+};
 export const post = async ({
 	request,
 	redirect,
@@ -10,8 +25,8 @@ export const post = async ({
 	const formEncodedData = await request.text();
 	const params = new URLSearchParams(formEncodedData);
 	const userName = params.get('userName');
-	const roomId = params.get('roomId');
-	if (!roomId)
+	const origRoomId = params.get('roomId');
+	if (!origRoomId)
 		return new Response(
 			JSON.stringify({ message: 'You must provide a room ID' }),
 			{ status: 400, statusText: 'roomId is required.' }
@@ -21,6 +36,8 @@ export const post = async ({
 			JSON.stringify({ message: 'You must provide a username' }),
 			{ status: 400, statusText: 'userName is required.' }
 		);
+
+	const roomId = correctRoomId(origRoomId);
 
 	let userId = cookies.get(roomId).value;
 	if (userId) {

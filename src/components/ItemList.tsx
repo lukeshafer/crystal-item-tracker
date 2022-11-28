@@ -1,4 +1,12 @@
-import { createSignal, For, onMount, Show } from 'solid-js';
+import {
+	createSignal,
+	For,
+	type JSX,
+	Match,
+	onMount,
+	Show,
+	Switch,
+} from 'solid-js';
 import { Portal } from 'solid-js/web';
 import { createStore } from 'solid-js/store';
 import { HoverBox } from './Tracker';
@@ -10,6 +18,7 @@ import {
 } from '@tanstack/solid-query';
 import type { inferRouterOutputs } from '@trpc/server';
 import type { AppRouter } from '../trpc/router/_index';
+import { userList } from './UserList';
 
 export type ItemFromApi =
 	inferRouterOutputs<AppRouter>['item']['getAll'][number];
@@ -57,8 +66,7 @@ const MouseItem = ({ src }: { src: string }) => {
 	);
 };
 
-const Item = ({ item, isHM }: { item: ItemFromApi; isHM?: boolean }) => {
-	isHM ??= false;
+const Item = ({ item }: { item: ItemFromApi; isHM?: boolean }) => {
 	const queryClient = useQueryClient();
 	let tooltip: HTMLDivElement;
 	const { name, img, id } = item;
@@ -68,13 +76,33 @@ const Item = ({ item, isHM }: { item: ItemFromApi; isHM?: boolean }) => {
 		{ initialData: false }
 	);
 
+	const foundUserColors = () => {
+		const colors = userList()
+			.filter(
+				(user) =>
+					user.userItems.find((userItem) => userItem.itemId === item.id)?.found
+			)
+			.map((user) => user.preferences.colorValue);
+		const ln = colors.length;
+		if (ln > 0)
+			return {
+				border: '15px solid',
+				'border-left-color': colors[0 % ln],
+				'border-right-color': colors[1 % ln],
+				'border-top-color': colors[2 % ln],
+				'border-bottom-color': colors[3 % ln],
+				'box-sizing': 'border-box',
+			} as JSX.CSSProperties;
+		return { border: 'none' } as JSX.CSSProperties;
+	};
+
 	const statusMutation = createMutation({
 		mutationFn: (status: boolean) =>
 			client.item.updateCollectedStatus.mutate({
 				itemId: id,
 				isCollected: status,
 			}),
-		meta: { queryKey: ['item.getCollectedStatus', id.toString()] },
+		meta: { queryKey: ['user.getUsers'] },
 		onMutate: (status) => {
 			queryClient.setQueryData(
 				['item.getCollectedStatus', id.toString()],
@@ -83,6 +111,7 @@ const Item = ({ item, isHM }: { item: ItemFromApi; isHM?: boolean }) => {
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries(['item.getCollectedStatus', id.toString()]);
+			queryClient.invalidateQueries(['user.getUsers']);
 		},
 	});
 
@@ -95,13 +124,17 @@ const Item = ({ item, isHM }: { item: ItemFromApi; isHM?: boolean }) => {
 		() => ['item.getCheckInfo', item.id],
 		() => client.item.getCheckInfo.query({ itemId: id })
 	);
-
 	const showTooltip = () => (tooltip.style.visibility = 'visible');
 	const hideTooltip = () => (tooltip.style.visibility = 'hidden');
+
+	const img_mods = item.img_mods?.split(',').map((mod) => {
+		const [type, data] = mod.split('|');
+		return { type, data };
+	});
 	return (
 		<li class="w-max">
 			<button
-				class="relative w-max"
+				class="relative w-10 box-border"
 				onClick={() => {
 					updateCollectedStatus(true);
 				}}
@@ -113,9 +146,12 @@ const Item = ({ item, isHM }: { item: ItemFromApi; isHM?: boolean }) => {
 				onMouseLeave={hideTooltip}
 				onFocus={showTooltip}
 				onBlur={hideTooltip}>
+				<div
+					class="absolute -z-10 w-full h-full inset-0"
+					style={foundUserColors() ?? {}}></div>
 				<img
 					src={'/' + img}
-					class="w-10 block"
+					class="w-10 block inset-0"
 					alt=""
 					style={{
 						filter: isCollectedQuery.data
@@ -123,8 +159,16 @@ const Item = ({ item, isHM }: { item: ItemFromApi; isHM?: boolean }) => {
 							: 'grayscale(100%) brightness(50%)',
 					}}
 				/>
-				<Show when={isHM}>
-					<p class="absolute bottom-0 left-0">{name.split(' ')[0]}</p>
+				<Show when={img_mods?.length}>
+					<For each={img_mods}>
+						{({ type, data }) => (
+							<Switch>
+								<Match when={type === 'overlay'}>
+									<img src={'/' + data} alt="" class="absolute inset-0" />
+								</Match>
+							</Switch>
+						)}
+					</For>
 				</Show>
 				<HoverBox ref={tooltip!}>
 					<p>{name}</p>
