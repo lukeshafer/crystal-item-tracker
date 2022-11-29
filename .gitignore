@@ -3,6 +3,9 @@ dist/
 .output/
 .vercel/
 
+notes/
+all_checks.txt
+
 # dependencies
 node_modules/
 

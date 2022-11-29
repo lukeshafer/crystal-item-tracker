@@ -27,7 +27,7 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 	const { name, checkId, completed, locationId } = value;
 
 	const [isChecked, setIsChecked] = createSignal(completed);
-	const checkboxQuery = createQuery(
+	createQuery(
 		() => ['checks.getCompleted', locationId.toString(), checkId.toString()],
 		() => client.checks.getCompleted.query({ checkId, locationId })
 	);
@@ -64,11 +64,11 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				['checks.getItem', locationId.toString(), checkId.toString()],
 				itemId
 					? {
-							itemId,
-							itemName: itemList.getItem(itemId)?.name,
-							itemImg: itemList.getItem(itemId)?.img,
-					  }
-					: undefined
+						itemId,
+						itemName: itemList.getItem(itemId)?.name,
+						itemImg: itemList.getItem(itemId)?.img,
+					}
+					: null
 			);
 		},
 		onSettled: () => {
@@ -78,6 +78,7 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				checkId.toString(),
 			]);
 			queryClient.invalidateQueries(['item.getCheckInfo']);
+			queryClient.invalidateQueries(['item.getAll']);
 		},
 	});
 

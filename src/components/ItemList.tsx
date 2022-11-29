@@ -57,9 +57,8 @@ const MouseItem = ({ src }: { src: string }) => {
 				src={src}
 				class="absolute left-2 top-2 w-6"
 				style={{
-					transform: `translate(${mousePositions()[0]}px, ${
-						mousePositions()[1]
-					}px)`,
+					transform: `translate(${mousePositions()[0]}px, ${mousePositions()[1]
+						}px)`,
 				}}
 			/>
 		</Portal>
@@ -207,7 +206,16 @@ const Marker = ({ item }: { item: ItemFromApi }) => {
 };
 
 export const ItemList = ({ items }: { items: ItemFromApi[] }) => {
-	setItemListState(items);
+	createQuery(
+		() => ['item.getAll'],
+		() => client.item.getAll.query(),
+		{
+			initialData: items,
+			onSuccess(data) {
+				setItemListState(data);
+			},
+		}
+	);
 
 	const otherItems = items.filter((item) => item.type === 'GENERAL');
 	const hmItems = items.filter((item) => item.type === 'HM');

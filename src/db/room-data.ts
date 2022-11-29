@@ -134,9 +134,6 @@ export const initUser = async ({
 		const roomItems = await prisma.item.findMany({
 			where: {
 				roomId: room.id,
-				NOT: {
-					type: 'MARKER',
-				},
 			},
 		});
 
