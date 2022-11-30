@@ -104,7 +104,8 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 		}
 	};
 
-	const handleRightClick = () => {
+	const handleRightClick = (e: MouseEvent) => {
+		e.preventDefault();
 		if (checkbox.checked) {
 			unchecking = true;
 			checkbox.click();

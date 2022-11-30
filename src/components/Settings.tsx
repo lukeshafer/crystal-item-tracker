@@ -15,22 +15,24 @@ export const Settings = ({ roomId }: { roomId: string }) => {
 				Settings
 			</button>
 			<Show when={isSettingsShown()}>
-				<button
-					class="text-center bg-gray-200 text-black p-2 rounded shadow-slate-900 shadow w-max block h-max"
-					onClick={() => setIsRoomIdShown((cur) => !cur)}>
-					<h2>{isRoomIdShown() ? 'Hide' : 'Show'} Room Id</h2>
-					<div class="text-center text-xl">
+				<section class="flex flex-col gap-2">
+					<button
+						class="text-center bg-gray-200 text-black p-2 rounded shadow-slate-900 shadow w-max block h-max"
+						onClick={() => setIsRoomIdShown((cur) => !cur)}>
+						{isRoomIdShown() ? 'Hide' : 'Show'} Room Id
+					</button>
+					<div class="bg-white text-black text-center text-xl p-2 rounded">
 						<Show
 							when={isRoomIdShown()}
 							fallback={
-								<span class="block blur-sm" hidden>
-									WORM
+								<span class="block blur-[5px]" hidden>
+									{roomId}
 								</span>
 							}>
 							{roomId}
 						</Show>
 					</div>
-				</button>
+				</section>
 				<section>
 					<h2 class="font-bold">Instructions</h2>
 					<p>Left click a check or item to mark as complete.</p>

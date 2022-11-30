@@ -18,7 +18,7 @@ import { CheckList } from './CheckList';
 import { type User, UserList } from './UserList';
 import { Settings } from './Settings';
 
-const [, setSelectedItem] = selectedItemSignal;
+const [selectedItem, setSelectedItem] = selectedItemSignal;
 
 interface HoverBoxProps extends ParentProps {
 	class?: string;
@@ -101,8 +101,10 @@ export const Tracker: Component<Props> = ({
 			<main
 				class="p-4 grid justify-items-center gap-8 max-w-6xl"
 				onContextMenu={(e) => {
-					e.preventDefault();
-					setSelectedItem();
+					if (selectedItem()) {
+						e.preventDefault();
+						setSelectedItem();
+					}
 				}}>
 				<div class="flex justify-start w-full flex-wrap">
 					<section
