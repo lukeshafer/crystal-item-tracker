@@ -1,6 +1,8 @@
 # Pokemon Crystal Web Item Tracker
+## [crystal-item-tracker.vercel.app](https://crystal-item-tracker.vercel.app/)
 
 _Note: this application is **very much** still in development. I recommend using it alongside EmoTracker or another tracker._
+
 
 Goals:
 
