@@ -1,12 +1,37 @@
+import {
+	createMutation,
+	createQuery,
+	useQueryClient,
+} from '@tanstack/solid-query';
+import { FaSolidLock, FaSolidLockOpen } from 'solid-icons/fa';
 import { createSignal, Show } from 'solid-js';
+import { client } from '../lib/trpc-client';
 
 export const Settings = ({ roomId }: { roomId: string }) => {
+	const queryClient = useQueryClient();
 	const [isSettingsShown, setIsSettingsShown] = createSignal(false);
 	const [isRoomIdShown, setIsRoomIdShown] = createSignal(false);
+	const [isRoomLocked, setIsRoomLocked] = createSignal(false);
 	const toggleVisibility = () => {
 		setIsSettingsShown((current) => !current);
 		setIsRoomIdShown(false);
 	};
+
+	createQuery(
+		() => ['room.getIsLocked'],
+		() => client.room.getIsLocked.query()
+	);
+
+	const mutateRoomLock = createMutation({
+		mutationFn: (input: boolean) =>
+			client.room.setIsLocked.mutate({ value: input }),
+		onMutate(input) {
+			setIsRoomLocked(input);
+		},
+		meta: { queryKey: ['room.getIsLocked'] },
+		onSettled: () => queryClient.invalidateQueries(['room.getIsLocked']),
+	});
+
 	return (
 		<section id="settings" class="flex justify-self-start gap-6 h-10">
 			<button
@@ -41,6 +66,18 @@ export const Settings = ({ roomId }: { roomId: string }) => {
 						Right click an incomplete check to remove an item (be careful with
 						this one!)
 					</p>
+				</section>
+				<section>
+					<button
+						class="text-center bg-gray-200 text-black p-2 rounded shadow-slate-900 shadow w-max h-max grid justify-items-center gap-2"
+						onclick={() => mutateRoomLock.mutate(!isRoomLocked())}>
+						<span>{isRoomLocked() ? 'Unlock' : 'Lock'} Room</span>
+						<Show
+							when={isRoomLocked()}
+							fallback={<FaSolidLockOpen width={40} height={40} />}>
+							<FaSolidLock width={40} height={40}></FaSolidLock>
+						</Show>
+					</button>
 				</section>
 			</Show>
 		</section>

@@ -55,7 +55,7 @@ export const post = async ({
 	try {
 		const room = await prisma.room.findUnique({ where: { id: roomId } });
 		if (!room) throw new Error();
-		if (room.status === 'PRIVATE') return redirect(`/?error=${roomId}`);
+		if (room.isLocked) return redirect(`/?error=${roomId}`);
 		userId = await initUser({ name: userName, roomId });
 	} catch (err) {
 		if (err instanceof Error)
