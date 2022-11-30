@@ -4,8 +4,13 @@ import {
 	useQueryClient,
 } from '@tanstack/solid-query';
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
-import { createEffect, createSignal, For, Show } from 'solid-js';
-import { FaSolidPalette } from 'solid-icons/fa';
+import { createSignal, For, Show } from 'solid-js';
+import {
+	FaSolidCheck,
+	FaSolidPalette,
+	FaSolidPencil,
+	FaSolidX,
+} from 'solid-icons/fa';
 import { client } from '../lib/trpc-client';
 import type { AppRouter } from '../trpc/router/_index';
 
@@ -76,6 +81,8 @@ const ColorSelector = ({ onSelect }: { onSelect(): void }) => {
 };
 
 export const UserList = ({ users: initialUsers }: UserProps) => {
+	const queryClient = useQueryClient();
+	setUsers(initialUsers);
 	createQuery(
 		() => ['user.getUsers'],
 		() => client.user.getUsers.query(),
@@ -86,19 +93,73 @@ export const UserList = ({ users: initialUsers }: UserProps) => {
 			},
 		}
 	);
+
+	const updateName = createMutation({
+		mutationFn: (name: string) => client.user.updateName.mutate({ name }),
+		meta: { queryKey: [''] },
+		onMutate: (input) => {
+			const queryData = users().map((user) => ({
+				...user,
+				name: user.isCurrentUser ? input : user.name,
+			}));
+			setUsers(queryData);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries(['user.getUsers']);
+		},
+	});
+
+	let nameInput: HTMLInputElement;
 	const [isSelectorShown, setIsSelectorShown] = createSignal(false);
+	const [isRenamingUser, setIsRenamingUser] = createSignal(false);
 	return (
 		<ul class="grid p-3 w-60 gap-4 content-start">
 			<For each={users()}>
 				{(user) => (
 					<li
-						class="px-4 py-2 h-16 flex items-center justify-between text-xl font-sans text-white w-full relative"
+						class="px-4 py-2 h-16 flex items-center text-xl font-sans text-white w-full relative"
 						style={{ background: user.preferences.colorValue }}>
-						{user.name}
-						<Show when={user.isCurrentUser}>
-							<button onClick={() => setIsSelectorShown(!isSelectorShown())}>
-								<FaSolidPalette width={30} height={30}></FaSolidPalette>
-							</button>
+						<Show when={user.isCurrentUser} fallback={user.name}>
+							<div class="flex gap-1 flex-1">
+								<Show when={isRenamingUser()} fallback={user.name}>
+									<input
+										ref={nameInput}
+										type="text"
+										class="text-black w-20"
+										placeholder="Name"
+										value={user.name}
+									/>
+									<button
+										onClick={() => {
+											updateName.mutate(nameInput.value);
+											setIsRenamingUser(false);
+										}}>
+										<FaSolidCheck width={20} height={20}>
+											Submit
+										</FaSolidCheck>
+									</button>
+								</Show>
+							</div>
+							<div class="flex gap-2">
+								<button onClick={() => setIsRenamingUser((v) => !v)}>
+									<Show
+										when={isRenamingUser()}
+										fallback={
+											<FaSolidPencil width={20} height={20}>
+												Change Name
+											</FaSolidPencil>
+										}>
+										<FaSolidX width={20} height={20}>
+											Cancel
+										</FaSolidX>
+									</Show>
+								</button>
+								<button onClick={() => setIsSelectorShown(!isSelectorShown())}>
+									<FaSolidPalette width={20} height={20}>
+										Change Color
+									</FaSolidPalette>
+								</button>
+							</div>
 							<Show when={isSelectorShown()}>
 								<ColorSelector
 									onSelect={() => setIsSelectorShown(false)}></ColorSelector>

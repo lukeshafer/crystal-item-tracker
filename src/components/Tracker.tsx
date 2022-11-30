@@ -16,6 +16,7 @@ import {
 } from '../components/ItemList';
 import { CheckList } from './CheckList';
 import { type User, UserList } from './UserList';
+import { Settings } from './Settings';
 
 const [, setSelectedItem] = selectedItemSignal;
 
@@ -34,9 +35,8 @@ export const HoverBox = ({
 				currentTarget.style.visibility = 'hidden';
 			}}
 			ref={tooltip!}
-			class={`absolute left-full top-full invisible z-10 bg-slate-900 text-white border border-white w-max p-2 ${
-				className ?? ''
-			}`}>
+			class={`absolute left-full top-full invisible z-10 bg-slate-900 text-white border border-white w-max p-2 ${className ?? ''
+				}`}>
 			{children}
 		</div>
 	);
@@ -47,6 +47,7 @@ export type Props = {
 	mapWidth: number;
 	users: User[];
 	webRtcRoomId: string;
+	roomId: string;
 } & ParentProps &
 	LocationProps;
 
@@ -58,10 +59,10 @@ export const Tracker: Component<Props> = ({
 	items,
 	users,
 	webRtcRoomId,
+	roomId,
 }: Props) => {
 	const queryClient = new QueryClient();
 
-	//***UNCOMMENT BELOW BLOCK FOR P2P CONNECTIONS***//
 	const webRtcClient = createClient({
 		publicApiKey: import.meta.env.PUBLIC_LIVEBLOCKS as string,
 	});
@@ -103,7 +104,7 @@ export const Tracker: Component<Props> = ({
 					e.preventDefault();
 					setSelectedItem();
 				}}>
-				<div class="flex justify-between w-full flex-wrap">
+				<div class="flex justify-start w-full flex-wrap">
 					<section
 						id="map"
 						class="relative block bg-gray-900"
@@ -120,6 +121,7 @@ export const Tracker: Component<Props> = ({
 					<ItemList items={items} />
 					<CheckList />
 				</div>
+				<Settings roomId={roomId} />
 			</main>
 		</QueryClientProvider>
 	);

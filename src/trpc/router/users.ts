@@ -50,22 +50,20 @@ export const userRouter = router({
 			a.isCurrentUser ? -1 : b.isCurrentUser ? 1 : 0
 		);
 	}),
-	//getUserPreferences: protectedProcedure
-	//.input(z.object({ userId: z.string().optional() }))
-	//.mutation(async ({ input, ctx }) => {
-	//const { roomId, userId: curUserId, prisma } = ctx;
-	//const { userId = curUserId } = input;
-	//const settingsString = JSON.stringify(input);
-	//const response = await prisma.user.update({
-	//where: {
-	//id_roomId: { id: userId, roomId },
-	//},
-	//data: {
-	//preferences: settingsString,
-	//},
-	//});
-	//return response;
-	//}),
+	updateName: protectedProcedure
+		.input(z.object({ name: z.string().min(1) }))
+		.mutation(async ({ input, ctx }) => {
+			const { roomId, userId, prisma } = ctx;
+			const response = await prisma.user.update({
+				where: {
+					id_roomId: { id: userId, roomId },
+				},
+				data: {
+					name: input.name,
+				},
+			});
+			return response;
+		}),
 	setUserPreferences: protectedProcedure
 		.input(userPreferencesSchema)
 		.mutation(async ({ input, ctx }) => {
