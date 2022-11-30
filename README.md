@@ -1,8 +1,8 @@
 # Pokemon Crystal Web Item Tracker
+
 ## [crystal-item-tracker.vercel.app](https://crystal-item-tracker.vercel.app/)
 
 _Note: this application is **very much** still in development. I recommend using it alongside EmoTracker or another tracker._
-
 
 Goals:
 
@@ -27,7 +27,6 @@ Parts of this project use data and files from [https://github.com/vicendithas/po
   - Tracker shows all locations and checks right away
 - Modes/variants
   - KIR vs FIR, extreme vs nightmare vs easy, etc
-- Maps showing every item location (akin to warp rando tracker)
+- Maps for each location, showing every item location (akin to warp rando tracker)
 - Lock sessions to be invite-only (cannot join without an invite link)
-- Change user name (it's locked per room once set)
 - I'll take suggestions and requests too!
