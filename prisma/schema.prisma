@@ -1,126 +1,152 @@
 // This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// learn more about it in the docs: https://prise.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity"]
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
-  referentialIntegrity = "prisma"
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
 model Room {
-  id        String  @id
-  password  String  @default(cuid()) 
-  rtcId     String  @default(cuid())
-  locations Location[] 
-  items     Item[] 
-  users     User[]
-  status    RoomStatus?
-  isLocked  Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id        String      @id
+    password  String      @default(cuid())
+    rtcId     String      @default(cuid())
+    locations Location[]
+    items     Item[]
+    users     User[]
+    status    RoomStatus?
+    isLocked  Boolean     @default(false)
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+    Marker    Marker[]
 }
 
 enum RoomStatus {
-  PUBLIC
-  PRIVATE
+    PUBLIC
+    PRIVATE
 }
 
 model User {
-  id    String  @default(cuid()) @unique
-  name  String
-  items UserItem[]
-  checks UserCheck[]
-  roomId String
-  preferences String?
-  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id          String      @unique @default(cuid())
+    name        String
+    items       UserItem[]
+    checks      UserCheck[]
+    roomId      String
+    preferences String?
+    room        Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
 
-  @@id([id, roomId])
+    @@id([id, roomId])
+    @@index([roomId])
 }
 
 model Location {
-  id      Int  
-  roomId  String 
-  room    Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  checks  Check[]
-  name    String
-  x       Int
-  y       Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id        Int
+    roomId    String
+    room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    checks    Check[]
+    name      String
+    x         Int
+    y         Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@id([id, roomId])
+    @@id([id, roomId])
+    @@index([roomId], name: "roomId")
 }
 
 model Check {
-  id              Int 
-  name            String
-  roomId          String
-  locationId      Int 
-  location        Location @relation(fields: [locationId, roomId], references: [id, roomId], onDelete: Cascade)
-  itemId          Int? 
-  itemFound       Item? @relation(fields: [itemId, roomId], references: [id, roomId], onDelete: Cascade)
-  userchecks      UserCheck[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-	@@map("ItemCheck")
-  @@id([id, roomId, locationId])
-  @@unique([itemId, roomId])
+    id         Int
+    name       String
+    roomId     String
+    locationId Int
+    location   Location    @relation(fields: [locationId, roomId], references: [id, roomId], onDelete: Cascade)
+    itemId     Int?
+    itemFound  Item?       @relation(fields: [itemId, roomId], references: [id, roomId], onDelete: Cascade)
+    userchecks UserCheck[]
+    createdAt  DateTime    @default(now())
+    updatedAt  DateTime    @updatedAt
+    Marker     Marker[]
+
+    @@id([id, roomId, locationId])
+    @@unique([itemId, roomId])
+    @@index([itemId, roomId], name: "ItemCheck")
+    @@index([locationId, roomId], name: "LocationCheck")
+    @@map("ItemCheck")
 }
 
 model UserCheck {
-  userId  String 
-  roomId  String
-  user    User @relation(fields: [userId, roomId], references: [id, roomId], onDelete: Cascade)
-  checkId Int
-  checkLocationId  Int
-  check   Check @relation(fields: [checkId, roomId, checkLocationId], references: [id, roomId, locationId], onDelete: Cascade)
-  completed Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    userId          String
+    roomId          String
+    user            User     @relation(fields: [userId, roomId], references: [id, roomId], onDelete: Cascade)
+    checkId         Int
+    checkLocationId Int
+    check           Check    @relation(fields: [checkId, roomId, checkLocationId], references: [id, roomId, locationId], onDelete: Cascade)
+    completed       Boolean  @default(false)
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
 
-  @@id([userId, checkId, roomId, checkLocationId])
+    @@id([userId, checkId, roomId, checkLocationId])
+    @@index([checkId, roomId, checkLocationId], name: "CheckUserCheck")
+    @@index([userId, roomId], name: "UserUserCheck")
 }
 
 model Item {
-  id                Int @default(autoincrement())
-  roomId            String
-  room              Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  foundAtCheck      Check?
-  userItemInstances UserItem[]
-  img               String
-  name              String
-  type              ItemType
-  img_mods          String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id                Int        @default(autoincrement())
+    roomId            String
+    room              Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    foundAtCheck      Check?
+    userItemInstances UserItem[]
+    img               String
+    name              String
+    type              ItemType
+    img_mods          String?
+    createdAt         DateTime   @default(now())
+    updatedAt         DateTime   @updatedAt
 
-  @@id([id, roomId])
+    @@id([id, roomId])
+    @@index([roomId])
 }
 
 enum ItemType {
-  GENERAL
-  HM
-  BADGE
-  MARKER
+    GENERAL
+    HM
+    BADGE
+    //MARKER
+}
+
+model Marker {
+    id              Int      @id @default(autoincrement())
+    roomId          String
+    room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    name            String
+    img             String
+    checkId         Int
+    checkLocationId Int
+    check           Check    @relation(fields: [checkId, roomId, checkLocationId], references: [id, roomId, locationId], onDelete: Cascade)
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+
+    @@index([checkId, roomId, checkLocationId])
+    @@index([roomId])
 }
 
 model UserItem {
-  userId  String 
-  roomId  String
-  user    User @relation(fields: [userId, roomId], references: [id, roomId], onDelete: Cascade)
-  itemId  Int
-  item    Item @relation(fields: [itemId, roomId], references: [id, roomId], onDelete: Cascade)
-  found   Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    userId    String
+    roomId    String
+    user      User     @relation(fields: [userId, roomId], references: [id, roomId], onDelete: Cascade)
+    itemId    Int
+    item      Item     @relation(fields: [itemId, roomId], references: [id, roomId], onDelete: Cascade)
+    found     Boolean  @default(false)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@id([userId, itemId, roomId])
+    @@id([userId, itemId, roomId])
+    @@index([userId, roomId])
+    @@index([itemId, roomId])
 }
-

@@ -63,37 +63,37 @@ export const Tracker: Component<Props> = ({
 }: Props) => {
 	const queryClient = new QueryClient();
 
-	const webRtcClient = createClient({
-		publicApiKey: import.meta.env.PUBLIC_LIVEBLOCKS as string,
-	});
+	//const webRtcClient = createClient({
+	//publicApiKey: import.meta.env.PUBLIC_LIVEBLOCKS as string,
+	//});
 	onMount(() => {
-		const room: Room<
-			{},
-			LsonObject,
-			BaseUserMeta,
-			{ type: 'update'; queryKey: string[] }
-		> = webRtcClient.enter(webRtcRoomId, { initialPresence: {} });
-		queryClient.setDefaultOptions({
-			mutations: {
-				onSuccess() {
-					const key = this.meta?.queryKey;
-					const parsedKey = z.array(z.string()).safeParse(key);
-					if (room && parsedKey.success) {
-						room.broadcastEvent({
-							type: 'update',
-							queryKey: parsedKey.data,
-						});
-					}
-				},
-			},
-		});
-		room.subscribe('event', ({ event: { type, queryKey } }) => {
-			switch (type) {
-				case 'update':
-					queryClient.invalidateQueries({ queryKey });
-					break;
-			}
-		});
+		//const room: Room<
+		//{},
+		//LsonObject,
+		//BaseUserMeta,
+		//{ type: 'update'; queryKey: string[] }
+		//> = webRtcClient.enter(webRtcRoomId, { initialPresence: {} });
+		//queryClient.setDefaultOptions({
+		//mutations: {
+		//onSuccess() {
+		//const key = this.meta?.queryKey;
+		//const parsedKey = z.array(z.string()).safeParse(key);
+		//if (room && parsedKey.success) {
+		//room.broadcastEvent({
+		//type: 'update',
+		//queryKey: parsedKey.data,
+		//});
+		//}
+		//},
+		//},
+		//});
+		//room.subscribe('event', ({ event: { type, queryKey } }) => {
+		//switch (type) {
+		//case 'update':
+		//queryClient.invalidateQueries({ queryKey });
+		//break;
+		//}
+		//});
 	});
 
 	return (
