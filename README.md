@@ -28,5 +28,4 @@ Parts of this project use data and files from [https://github.com/vicendithas/po
 - Modes/variants
   - KIR vs FIR, extreme vs nightmare vs easy, etc
 - Maps for each location, showing every item location (akin to warp rando tracker)
-- Lock sessions to be invite-only (cannot join without an invite link)
 - I'll take suggestions and requests too!
