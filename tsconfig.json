@@ -3,7 +3,10 @@
 	"extends": "astro/tsconfigs/strictest",
 	"compilerOptions": {
 		"jsx": "preserve",
-		"jsxImportSource": "solid-js"
+		"jsxImportSource": "solid-js",
+		"baseUrl": "."
 	},
-	"exclude": ["tracker-data/*"]
+	"exclude": [
+		"tracker-data"
+	]
 }

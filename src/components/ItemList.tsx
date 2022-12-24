@@ -37,6 +37,7 @@ export const selectedItemSignal = createSignal<{
 	src: string;
 	id: number;
 	name: string;
+	type: string;
 }>();
 const [selectedItem, setSelectedItem] = selectedItemSignal;
 
@@ -68,7 +69,7 @@ const MouseItem = ({ src }: { src: string }) => {
 const Item = ({ item }: { item: ItemFromApi; isHM?: boolean }) => {
 	const queryClient = useQueryClient();
 	let tooltip: HTMLDivElement;
-	const { name, img, id } = item;
+	const { name, img, id, type } = item;
 	const isCollectedQuery = createQuery(
 		() => ['item.getCollectedStatus', id.toString()],
 		() => client.item.getCollectedStatus.query({ itemId: id }),
@@ -115,7 +116,7 @@ const Item = ({ item }: { item: ItemFromApi; isHM?: boolean }) => {
 	});
 
 	const updateCollectedStatus = (status: boolean) => {
-		setSelectedItem(status ? { id, src: img, name } : undefined);
+		setSelectedItem(status ? { id, src: img, name, type } : undefined);
 		statusMutation.mutate(status);
 	};
 
@@ -186,14 +187,14 @@ const Item = ({ item }: { item: ItemFromApi; isHM?: boolean }) => {
 };
 
 const Marker = ({ item }: { item: ItemFromApi }) => {
-	const { name, img, id } = item;
+	const { name, img, id, type } = item;
 	return (
 		<li class="w-max">
 			<button
 				class="grid justify-center place-items-center"
 				onClick={() => {
 					console.log('clicked');
-					setSelectedItem({ id, src: img, name });
+					setSelectedItem({ id, src: img, name, type });
 				}}>
 				<img src={'/' + item.img} class="w-10 block" alt="" />
 				<p class="">{item.name}</p>

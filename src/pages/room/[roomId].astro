@@ -42,6 +42,7 @@ const locations = await prisma.location.findMany({ where: { roomId } });
 const trpcCaller = appRouter.createCaller({ prisma, userId, roomId });
 const users = await trpcCaller.user.getUsers();
 const items = await trpcCaller.item.getAll();
+const markers = await prisma.marker.findMany({ where: { roomId } });
 
 const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 ---
@@ -50,6 +51,7 @@ const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 	<Tracker
 		client:load
 		items={items}
+		markers={markers}
 		locations={locations}
 		users={users}
 		mapWidth={IMG_WIDTH}

@@ -1,6 +1,6 @@
 import { createSignal, For, Match, Show, Switch } from 'solid-js';
 import { currentLocationSignal } from './Locations';
-import { itemList, selectedItemSignal } from './ItemList';
+import { selectedItemSignal } from './ItemList';
 import { client } from '../lib/trpc-client';
 import {
 	createMutation,
@@ -49,28 +49,37 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 
 	const checkItemQuery = createQuery(
 		() => ['checks.getItem', locationId.toString(), checkId.toString()],
-		() => client.checks.getItem.query({ checkId, locationId })
+		() => client.checks.getItems.query({ checkId, locationId })
 	);
+
+	const checkMarkerQuery = createQuery(
+		() => ['checks.getMarkers', locationId.toString(), checkId.toString()],
+		() => client.checks.getMarkers.query({ checkId, locationId })
+	)
+
 	const checkItemMutation = createMutation({
-		mutationFn: (itemId?: number) =>
-			client.checks.setItem.mutate({
-				itemId,
+		mutationFn: ({ itemId, create }: { itemId: number, create: boolean }) =>
+			client.item.setCheck.mutate({
 				checkId,
-				locationId,
+				checkLocationId: locationId,
+				itemId,
+				create,
 			}),
 		meta: { queryKey: ['checks'] },
-		onMutate(itemId) {
-			queryClient.setQueryData(
-				['checks.getItem', locationId.toString(), checkId.toString()],
-				itemId
-					? {
-						itemId,
-						itemName: itemList.getItem(itemId)?.name,
-						itemImg: itemList.getItem(itemId)?.img,
-					}
-					: null
-			);
-		},
+		//onMutate({ itemId }) {
+		//const currentItemData = checkItemQuery.data ?? [];
+		//queryClient.setQueryData(
+		//['checks.getItem', locationId.toString(), checkId.toString()],
+		//itemId
+		//? [...currentItemData,
+		//{
+		//itemId,
+		//itemName: itemList.getItem(itemId)?.name,
+		//itemImg: itemList.getItem(itemId)?.img,
+		//}]
+		//: currentItemData
+		//);
+		//},
 		onSettled: () => {
 			queryClient.invalidateQueries([
 				'checks.getItem',
@@ -99,7 +108,7 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 			unchecking = false;
 		}
 		if (selectedItem()) {
-			checkItemMutation.mutate(selectedItem()!.id);
+			checkItemMutation.mutate({ itemId: selectedItem()!.id, create: true });
 			setSelectedItem(undefined);
 		}
 	};
@@ -110,7 +119,7 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 			unchecking = true;
 			checkbox.click();
 		} else {
-			checkItemMutation.mutate(undefined);
+			//checkItemMutation.mutate(undefined);
 		}
 	};
 
@@ -132,11 +141,31 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 				{name}
 			</label>
 			<Show when={checkItemQuery.isSuccess && checkItemQuery.data}>
-				<img
-					src={'/' + checkItemQuery.data!.itemImg}
-					class="w-6 h-6"
-					alt={checkItemQuery.data!.itemName}
-				/>
+				<For each={checkItemQuery.data!}>
+					{(item) => (
+						<img
+							src={'/' + item.img}
+							class="w-6 h-6"
+							alt={item.name}
+							onContextMenu={(e) => {
+								e.preventDefault()
+								checkItemMutation.mutate({ itemId: item.id, create: false })
+							}}
+						/>
+					)}
+				</For>
+			</Show>
+
+			<Show when={checkMarkerQuery.isSuccess && checkMarkerQuery.data}>
+				<For each={checkMarkerQuery.data!}>
+					{(marker) => (
+						<img
+							src={'/' + marker.img}
+							class="w-6 h-6"
+							alt={marker.name}
+						/>
+					)}
+				</For>
 			</Show>
 		</li>
 	);

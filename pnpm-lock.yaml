@@ -34,7 +34,7 @@ specifiers:
 
 dependencies:
   '@astrojs/image': 0.11.5
-  '@astrojs/solid-js': 1.2.3_35qgajjoxpxbpcnuyad4bewoni
+  '@astrojs/solid-js': 1.2.3_solid-js@1.6.2
   '@astrojs/tailwind': 2.1.2_tailwindcss@3.2.4
   '@astrojs/vercel': 2.3.4
   '@fontsource/concert-one': 4.5.9
@@ -53,7 +53,7 @@ dependencies:
   solid-icons: 1.0.4_solid-js@1.6.2
   solid-js: 1.6.2
   superjson: 1.11.0
-  tailwindcss: 3.2.4_v776zzvn44o7tpgzieipaairwm
+  tailwindcss: 3.2.4_ts-node@10.9.1
   y-webrtc: 10.2.3
   yjs: 13.5.42
   zod: 3.19.1
@@ -64,7 +64,7 @@ devDependencies:
   prettier-plugin-astro: 0.7.0
   prettier-plugin-tailwindcss: 0.1.13_prettier@2.7.1
   prisma: 4.6.1
-  ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
+  ts-node: 10.9.1_@types+node@18.11.9
 
 packages:
 
@@ -171,13 +171,13 @@ packages:
       prismjs: 1.29.0
     dev: false
 
-  /@astrojs/solid-js/1.2.3_35qgajjoxpxbpcnuyad4bewoni:
+  /@astrojs/solid-js/1.2.3_solid-js@1.6.2:
     resolution: {integrity: sha512-YyWQVcIeUMGKTnK3myXmBrG6dfYL5qiQNn8fv50jV0nPgahLeSUTIVxtt5WtqmbFr5kGTwDyk63TZoUvCUWJXA==}
     engines: {node: ^14.18.0 || >=16.12.0}
     peerDependencies:
       solid-js: ^1.4.3
     dependencies:
-      babel-preset-solid: 1.6.2_@babel+core@7.20.2
+      babel-preset-solid: 1.6.2
       solid-js: 1.6.2
       vitefu: 0.2.1
     transitivePeerDependencies:
@@ -193,7 +193,7 @@ packages:
       '@proload/core': 0.3.3
       autoprefixer: 10.4.13_postcss@8.4.19
       postcss: 8.4.19
-      tailwindcss: 3.2.4_v776zzvn44o7tpgzieipaairwm
+      tailwindcss: 3.2.4_ts-node@10.9.1
     dev: false
 
   /@astrojs/telemetry/1.0.1:
@@ -404,6 +404,15 @@ packages:
     hasBin: true
     dependencies:
       '@babel/types': 7.20.2
+    dev: false
+
+  /@babel/plugin-syntax-jsx/7.18.6:
+    resolution: {integrity: sha512-6mmljtAedFGTWu2p/8WIORGwy+61PLgOMPOdazc7YoJ9ZCWUyFy3A6CpPkRKLKD1ToAesxX8KGEViAiLo9N+7Q==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+    dependencies:
+      '@babel/helper-plugin-utils': 7.20.2
     dev: false
 
   /@babel/plugin-syntax-jsx/7.18.6_@babel+core@7.20.2:
@@ -1098,25 +1107,23 @@ packages:
       postcss-value-parser: 4.2.0
     dev: false
 
-  /babel-plugin-jsx-dom-expressions/0.35.4_@babel+core@7.20.2:
+  /babel-plugin-jsx-dom-expressions/0.35.4:
     resolution: {integrity: sha512-Ab8W+36+XcNpyb644K537MtuhZRssgE3hmZD/08a1Z99Xfnd38tR2BZaDl7yEQvvHrb46N+eje2YjIg4VGAfVQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
     dependencies:
-      '@babel/core': 7.20.2
       '@babel/helper-module-imports': 7.16.0
-      '@babel/plugin-syntax-jsx': 7.18.6_@babel+core@7.20.2
+      '@babel/plugin-syntax-jsx': 7.18.6
       '@babel/types': 7.20.2
       html-entities: 2.3.2
     dev: false
 
-  /babel-preset-solid/1.6.2_@babel+core@7.20.2:
+  /babel-preset-solid/1.6.2:
     resolution: {integrity: sha512-5sFI34g7Jtp4r04YFWkuC1o+gnekBdPXQTJb5/6lmxi5YwzazVgKAXRwEAToC3zRaPyIYJbZUVLpOi5mDzPEuw==}
     peerDependencies:
       '@babel/core': ^7.0.0
     dependencies:
-      '@babel/core': 7.20.2
-      babel-plugin-jsx-dom-expressions: 0.35.4_@babel+core@7.20.2
+      babel-plugin-jsx-dom-expressions: 0.35.4
     dev: false
 
   /bail/2.0.2:
@@ -3472,7 +3479,7 @@ packages:
     dependencies:
       lilconfig: 2.0.6
       postcss: 8.4.19
-      ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
+      ts-node: 10.9.1_@types+node@18.11.9
       yaml: 1.10.2
     dev: false
 
@@ -4062,12 +4069,10 @@ packages:
       '@pkgr/utils': 2.3.1
       tslib: 2.4.1
 
-  /tailwindcss/3.2.4_v776zzvn44o7tpgzieipaairwm:
+  /tailwindcss/3.2.4_ts-node@10.9.1:
     resolution: {integrity: sha512-AhwtHCKMtR71JgeYDaswmZXhPcW9iuI9Sp2LvZPo9upDZ7231ZJ7eA9RaURbhpXGVlrjX4cFNlB4ieTetEb7hQ==}
     engines: {node: '>=12.13.0'}
     hasBin: true
-    peerDependencies:
-      postcss: ^8.0.9
     dependencies:
       arg: 5.0.2
       chokidar: 3.5.3
@@ -4143,7 +4148,7 @@ packages:
     resolution: {integrity: sha512-AqTiAOLcj85xS7vQ8QkAV41hPDIJ71XJB4RCUrzo/1GM2CQwhkJGaf9Hgr7BOugMRpgGUrqRg/DrBDl4H40+8g==}
     dev: false
 
-  /ts-node/10.9.1_wup25etrarvlqkprac7h35hj7u:
+  /ts-node/10.9.1_@types+node@18.11.9:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -4169,7 +4174,6 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 4.9.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
@@ -4209,6 +4213,7 @@ packages:
     resolution: {integrity: sha512-CIfGzTelbKNEnLpLdGFgdyKhG23CKdKgQPOBc+OUNrkJ2vr+KSzsSV5kq5iWhEQbok+quxgGzrAtGWCyU7tHnA==}
     engines: {node: '>=4.2.0'}
     hasBin: true
+    dev: false
 
   /unherit/3.0.1:
     resolution: {integrity: sha512-akOOQ/Yln8a2sgcLj4U0Jmx0R5jpIg2IUyRrWOzmEbjBtGzBdHtSeFKgoEcoH4KYIG/Pb8GQ/BwtYm0GCq1Sqg==}

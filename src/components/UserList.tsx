@@ -28,8 +28,8 @@ const ColorSelector = ({ onSelect }: { onSelect(): void }) => {
 	const queryClient = useQueryClient();
 	const colors = new Map([
 		['red', ['#de1429', '#de3214', '#de145b']],
-		['yellow', ['#9b5b0d', '#bc9613', '#c3e500']],
-		['green', ['#3b840b', '#0e840b', '#0b8444']],
+		['yellow', ['#c3e500', '#9b5b0d', '#bc9613', ]],
+		['green', ['#0e840b', '#3b840b', '#0b8444']],
 		['blue', ['#0b4a84', '#0b0d84', '#630b84']],
 	]);
 
@@ -52,6 +52,19 @@ const ColorSelector = ({ onSelect }: { onSelect(): void }) => {
 	const otherUserColors = userList().map((user) =>
 		user.isCurrentUser ? 'not set' : user.preferences.colorName ?? 'not set'
 	);
+
+	const currentUser = users().find((user) => user.isCurrentUser);
+	if (currentUser && !currentUser.preferences.colorName) {
+	const color = [...colors.entries()].find(([name]) => {
+	return !otherUserColors.includes(name ?? "");
+	})
+	if (color && color[0]) {
+	setPreferencesMutation.mutate({
+	colorName: color[0],
+	colorValue: colors.get(color[0])?.at(0)
+	});
+	}
+	}
 
 	const setColor = (name: string, color: string) => {
 		setPreferencesMutation.mutate({ colorValue: color, colorName: name });
@@ -110,6 +123,9 @@ export const UserList = ({ users: initialUsers }: UserProps) => {
 	});
 
 	let nameInput: HTMLInputElement;
+
+	ColorSelector({ onSelect: () => {} });
+
 	const [isSelectorShown, setIsSelectorShown] = createSignal(false);
 	const [isRenamingUser, setIsRenamingUser] = createSignal(false);
 	return (

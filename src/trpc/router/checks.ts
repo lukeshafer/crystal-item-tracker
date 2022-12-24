@@ -104,29 +104,40 @@ export const checkRouter = router({
 				return { status: 500, error: 'Error updating check' };
 			}
 		}),
-	setItem: protectedProcedure
-		.input(
-			z.object({
-				checkId: z.number(),
-				locationId: z.number(),
-				itemId: z.number().optional(),
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const { roomId, prisma } = ctx;
-			const { checkId, locationId, itemId } = input;
-			try {
-				const result = await prisma.check.update({
-					where: { id_roomId_locationId: { id: checkId, locationId, roomId } },
-					data: { itemId: itemId ?? null },
-				});
-				return result.itemId ?? null;
-			} catch (err) {
-				console.error(err);
-				return null;
-			}
-		}),
-	getItem: protectedProcedure
+	//setItem: protectedProcedure
+	//.input(
+	//z.object({
+	//checkId: z.number(),
+	//locationId: z.number(),
+	//itemId: z.number().optional(),
+	//})
+	//)
+	//.mutation(async ({ input, ctx }) => {
+	//const { roomId, prisma } = ctx;
+	//const { checkId, locationId, itemId } = input;
+	//const item = itemId ? await prisma.item.findUnique({
+	//where: {
+	//id_roomId: {
+	//id: itemId, roomId
+	//}
+	//}
+	//}) : null;
+	//if (item?.type === 'MARKER') {
+	//return null;
+	//}
+
+	//try {
+	//const result = await prisma.check.update({
+	//where: { id_roomId_locationId: { id: checkId, locationId, roomId } },
+	//data: { itemId: itemId ?? null },
+	//});
+	//return result.itemId ?? null;
+	//} catch (err) {
+	//console.error(err);
+	//return null;
+	//}
+	//}),
+	getItems: protectedProcedure
 		.input(
 			z.object({
 				checkId: z.number(),
@@ -140,19 +151,43 @@ export const checkRouter = router({
 				const result = await prisma.check.findUnique({
 					where: { id_roomId_locationId: { id: checkId, locationId, roomId } },
 					include: {
-						itemFound: true,
+						items: true
 					},
 				});
-				if (result?.itemFound)
-					return {
-						itemId: result.itemFound.id,
-						itemName: result.itemFound.name,
-						itemImg: result.itemFound.img,
-					};
-				return null;
+				if (!result || result.items.length === 0) return null
+				const items = result.items.map(({ id, name, img }) => ({ id, name, img }))
+				return items
 			} catch (err) {
 				console.error(err);
 				return null;
 			}
 		}),
+	getMarkers: protectedProcedure
+		.input(
+			z.object({
+				checkId: z.number(),
+				locationId: z.number(),
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { roomId, prisma } = ctx;
+			const { checkId, locationId } = input;
+			try {
+				const result = await prisma.markerCheck.findMany({
+					where: {
+						roomId,
+						checkId,
+						checkLocationId: locationId
+					},
+					select: {
+						marker: true
+					}
+				});
+				const markers = result.map(({ marker }) => marker);
+				return markers;
+			} catch (err) {
+				console.error(err);
+				return null;
+			}
+		})
 });

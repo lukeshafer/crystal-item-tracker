@@ -71,26 +71,64 @@ export const itemsRouter = router({
 		.query(async ({ input, ctx }) => {
 			const { roomId, prisma } = ctx;
 			try {
-				const data = await prisma.check.findFirst({
+				const data = await prisma.item.findUnique({
 					where: {
-						itemId: input.itemId,
-						roomId,
+						id_roomId: { id: input.itemId, roomId },
+					},
+					include: {
+						foundAtCheck: true,
+					},
+				});
+				if (!data?.foundAtCheck) return null;
+				const check = await prisma.check.findUnique({
+					where: {
+						id_roomId_locationId: {
+							id: data.foundAtCheck.id,
+							roomId,
+							locationId: data.foundAtCheck.locationId,
+						},
 					},
 					include: {
 						location: true,
 					},
 				});
-				if (data)
-					return {
-						checkId: data.id,
-						checkName: data.name,
-						locationId: data.locationId,
-						locationName: data.location.name,
-					};
-				else return null;
+				if (!check) return null;
+				return {
+					checkId: check.id,
+					checkName: check.name,
+					locationId: check.locationId,
+					locationName: check.location.name,
+				};
 			} catch (err) {
 				console.error(err);
 				return null;
 			}
 		}),
+	setCheck: protectedProcedure
+		.input(z.object({
+			itemId: z.number(),
+			checkId: z.number(),
+			checkLocationId: z.number(),
+			create: z.boolean(),
+		}).optional())
+		.mutation(async ({ input, ctx }) => {
+			const { roomId, prisma } = ctx;
+			if (!input) return { success: false };
+			try {
+				const data = await prisma.item.update({
+					where: {
+						id_roomId: { id: input.itemId, roomId },
+					},
+					data: {
+						checkId: input.create ? input.checkId : null,
+						checkLocationId: input.create ? input.checkLocationId : null,
+					},
+				})
+				if (data) return { success: true };
+				else return { success: false };
+			} catch (err) {
+				console.error(err);
+				return { success: false };
+			}
+		})
 });

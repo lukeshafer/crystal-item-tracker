@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://prise.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
+    previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
@@ -22,7 +23,6 @@ model Room {
     isLocked  Boolean     @default(false)
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
-    Marker    Marker[]
 }
 
 enum RoomStatus {
@@ -61,21 +61,18 @@ model Location {
 }
 
 model Check {
-    id         Int
-    name       String
-    roomId     String
-    locationId Int
-    location   Location    @relation(fields: [locationId, roomId], references: [id, roomId], onDelete: Cascade)
-    itemId     Int?
-    itemFound  Item?       @relation(fields: [itemId, roomId], references: [id, roomId], onDelete: Cascade)
-    userchecks UserCheck[]
-    createdAt  DateTime    @default(now())
-    updatedAt  DateTime    @updatedAt
-    Marker     Marker[]
+    id           Int
+    name         String
+    roomId       String
+    locationId   Int
+    location     Location      @relation(fields: [locationId, roomId], references: [id, roomId], onDelete: Cascade)
+    items        Item[]
+    userchecks   UserCheck[]
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    markerChecks MarkerCheck[]
 
     @@id([id, roomId, locationId])
-    @@unique([itemId, roomId])
-    @@index([itemId, roomId], name: "ItemCheck")
     @@index([locationId, roomId], name: "LocationCheck")
     @@map("ItemCheck")
 }
@@ -100,7 +97,9 @@ model Item {
     id                Int        @default(autoincrement())
     roomId            String
     room              Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
-    foundAtCheck      Check?
+    checkId           Int?
+    checkLocationId   Int?
+    foundAtCheck      Check?     @relation(fields: [checkId, checkLocationId, roomId], references: [id, locationId, roomId], onDelete: Cascade)
     userItemInstances UserItem[]
     img               String
     name              String
@@ -111,29 +110,41 @@ model Item {
 
     @@id([id, roomId])
     @@index([roomId])
+    @@index([checkId, checkLocationId, roomId], name: "CheckItem")
 }
 
 enum ItemType {
     GENERAL
     HM
     BADGE
-    //MARKER
+    MARKER
 }
 
 model Marker {
-    id              Int      @id @default(autoincrement())
+    id           Int
+    roomId       String
+    img          String
+    name         String
+    markerChecks MarkerCheck[]
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+
+    @@id([id, roomId])
+}
+
+model MarkerCheck {
     roomId          String
-    room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-    name            String
-    img             String
+    markerId        Int
+    marker          Marker   @relation(fields: [markerId, roomId], references: [id, roomId], onDelete: Cascade)
     checkId         Int
     checkLocationId Int
-    check           Check    @relation(fields: [checkId, roomId, checkLocationId], references: [id, roomId, locationId], onDelete: Cascade)
+    check           Check    @relation(fields: [checkId, checkLocationId, roomId], references: [id, locationId, roomId], onDelete: Cascade)
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
 
-    @@index([checkId, roomId, checkLocationId])
-    @@index([roomId])
+    @@id([markerId, checkId, checkLocationId])
+    @@index([markerId, roomId])
+    @@index([checkId, checkLocationId, roomId])
 }
 
 model UserItem {

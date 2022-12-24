@@ -54,25 +54,51 @@ export const initRoom = async () => {
 	let step = 'item';
 	let itemData;
 	try {
-		itemData = items.map(({ id, name, img, img_mods = null, codes }) => {
-			let type: ItemType;
-			if (codes === 'marker') type = 'MARKER';
-			else if (['TM', 'HM'].includes(name.substring(0, 2))) type = 'HM';
-			else if (name.toLowerCase().includes('badge')) type = 'BADGE';
-			else type = 'GENERAL';
-			return {
-				roomId,
-				id,
-				name,
-				img,
-				img_mods,
-				type,
-			};
-		});
+		const data = items.reduce(
+			(acc, { id, name, img, img_mods = null, codes }) => {
+				let type: ItemType;
+				if (codes === 'marker') {
+					acc.markers.push({ roomId, id, name, img });
+					return acc;
+				}
+				if (['TM', 'HM'].includes(name.substring(0, 2))) type = 'HM';
+				else if (name.toLowerCase().includes('badge')) type = 'BADGE';
+				else type = 'GENERAL';
+				acc.itemData.push({
+					roomId,
+					id,
+					name,
+					img,
+					img_mods,
+					type,
+				});
+				return acc;
+			},
+			{
+				markers: [] as { roomId: string; id: number; name: string; img: string }[],
+				itemData: [] as {
+					roomId: string;
+					id: number;
+					name: string;
+					img: string;
+					img_mods?: string | null;
+					type: 'HM' | 'BADGE' | 'GENERAL';
+				}[],
+			}
+		);
+		itemData = data.itemData;
+
 		console.log('Item data:', itemData);
 		await prisma.item.createMany({
 			data: itemData,
 		});
+
+		step = 'marker';
+		console.log('Marker data:', data.markers);
+		await prisma.marker.createMany({
+			data: data.markers,
+		});
+
 		step = 'location';
 		await prisma.location.createMany({
 			data: locations.map((location, locationIndex) => ({
