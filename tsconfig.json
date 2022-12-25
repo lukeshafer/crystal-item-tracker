@@ -7,6 +7,6 @@
 		"baseUrl": "."
 	},
 	"exclude": [
-		"tracker-data"
+		"tracker-data/**/*"
 	]
 }

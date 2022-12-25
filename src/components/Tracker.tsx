@@ -13,6 +13,7 @@ import {
 	ItemList,
 	selectedItemSignal,
 	type ItemFromApi,
+	type Marker,
 } from '../components/ItemList';
 import { CheckList } from './CheckList';
 import { type User, UserList } from './UserList';
@@ -44,6 +45,7 @@ export const HoverBox = ({
 
 export type Props = {
 	items: ItemFromApi[];
+	markers: Marker[];
 	mapWidth: number;
 	users: User[];
 	webRtcRoomId: string;
@@ -57,6 +59,7 @@ export const Tracker: Component<Props> = ({
 	positionModifier,
 	mapWidth,
 	items,
+	markers,
 	users,
 	webRtcRoomId,
 	roomId,
@@ -120,7 +123,7 @@ export const Tracker: Component<Props> = ({
 					<UserList users={users}></UserList>
 				</div>
 				<div class="flex gap-4 justify-start w-full flex-wrap">
-					<ItemList items={items} />
+					<ItemList items={items} markers={markers} />
 					<CheckList />
 				</div>
 				<Settings roomId={roomId} />

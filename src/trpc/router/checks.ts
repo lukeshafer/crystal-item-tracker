@@ -180,7 +180,13 @@ export const checkRouter = router({
 						checkLocationId: locationId
 					},
 					select: {
-						marker: true
+						marker: {
+							select: {
+								id: true,
+								name: true,
+								img: true
+							}
+						}
 					}
 				});
 				const markers = result.map(({ marker }) => marker);
@@ -189,5 +195,60 @@ export const checkRouter = router({
 				console.error(err);
 				return null;
 			}
-		})
+		}),
+	addMarker: protectedProcedure
+		.input(
+			z.object({
+				checkId: z.number(),
+				locationId: z.number(),
+				markerId: z.number(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { roomId, prisma } = ctx;
+			const { checkId, locationId, markerId } = input;
+			try {
+				const result = await prisma.markerCheck.create({
+					data: {
+						roomId,
+						checkId,
+						checkLocationId: locationId,
+						markerId
+					}
+				});
+				return result;
+			} catch (err) {
+				console.error(err);
+				return null;
+			}
+		}),
+	removeMarker: protectedProcedure
+		.input(
+			z.object({
+				checkId: z.number(),
+				locationId: z.number(),
+				markerId: z.number(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { roomId, prisma } = ctx;
+			const { checkId, locationId, markerId } = input;
+			try {
+				const result = await prisma.markerCheck.delete({
+					where: {
+						markerId_checkId_checkLocationId_roomId: {
+							markerId,
+							checkId,
+							checkLocationId: locationId,
+							roomId
+						}
+					}
+				});
+				return result;
+			}
+			catch (err) {
+				console.error(err);
+				return null;
+			}
+		}),
 });

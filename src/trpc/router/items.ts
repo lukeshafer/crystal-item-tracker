@@ -109,7 +109,6 @@ export const itemsRouter = router({
 			itemId: z.number(),
 			checkId: z.number(),
 			checkLocationId: z.number(),
-			create: z.boolean(),
 		}).optional())
 		.mutation(async ({ input, ctx }) => {
 			const { roomId, prisma } = ctx;
@@ -120,8 +119,32 @@ export const itemsRouter = router({
 						id_roomId: { id: input.itemId, roomId },
 					},
 					data: {
-						checkId: input.create ? input.checkId : null,
-						checkLocationId: input.create ? input.checkLocationId : null,
+						checkId: input.checkId,
+						checkLocationId: input.checkLocationId,
+					},
+				})
+				if (data) return { success: true };
+				else return { success: false };
+			} catch (err) {
+				console.error(err);
+				return { success: false };
+			}
+		}),
+	removeCheck: protectedProcedure
+		.input(z.object({
+			itemId: z.number(),
+		}).optional())
+		.mutation(async ({ input, ctx }) => {
+			const { roomId, prisma } = ctx;
+			if (!input) return { success: false };
+			try {
+				const data = await prisma.item.update({
+					where: {
+						id_roomId: { id: input.itemId, roomId },
+					},
+					data: {
+						checkId: null,
+						checkLocationId: null,
 					},
 				})
 				if (data) return { success: true };

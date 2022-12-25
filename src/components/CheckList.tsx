@@ -57,29 +57,22 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 		() => client.checks.getMarkers.query({ checkId, locationId })
 	)
 
-	const checkItemMutation = createMutation({
-		mutationFn: ({ itemId, create }: { itemId: number, create: boolean }) =>
+	const checkItemAddMutation = createMutation({
+		mutationFn: ({ itemId }: { itemId: number, itemName: string, itemImg: string }) =>
 			client.item.setCheck.mutate({
 				checkId,
 				checkLocationId: locationId,
 				itemId,
-				create,
 			}),
 		meta: { queryKey: ['checks'] },
-		//onMutate({ itemId }) {
-		//const currentItemData = checkItemQuery.data ?? [];
-		//queryClient.setQueryData(
-		//['checks.getItem', locationId.toString(), checkId.toString()],
-		//itemId
-		//? [...currentItemData,
-		//{
-		//itemId,
-		//itemName: itemList.getItem(itemId)?.name,
-		//itemImg: itemList.getItem(itemId)?.img,
-		//}]
-		//: currentItemData
-		//);
-		//},
+		onMutate({ itemId, itemName, itemImg }) {
+			const currentItemData = checkItemQuery.data ?? [];
+			if (currentItemData.some((item) => item.id === itemId)) return
+			queryClient.setQueryData(
+				['checks.getItem', locationId.toString(), checkId.toString()],
+				[...currentItemData, { id: itemId, name: itemName, img: itemImg }]
+			);
+		},
 		onSettled: () => {
 			queryClient.invalidateQueries([
 				'checks.getItem',
@@ -90,6 +83,81 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 			queryClient.invalidateQueries(['item.getAll']);
 		},
 	});
+
+	const checkItemDeleteMutation = createMutation({
+		mutationFn: ({ itemId }: { itemId: number }) =>
+			client.item.removeCheck.mutate({
+				itemId,
+			}),
+		meta: { queryKey: ['checks'] },
+		onMutate({ itemId }) {
+			const currentItemData = checkItemQuery.data ?? [];
+			const newItemData = currentItemData.filter((item) => item.id !== itemId);
+			queryClient.setQueryData(
+				['checks.getItem', locationId.toString(), checkId.toString()],
+				newItemData
+			);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries([
+				'checks.getItem',
+				locationId.toString(),
+				checkId.toString(),
+			]);
+			queryClient.invalidateQueries(['item.getCheckInfo']);
+			queryClient.invalidateQueries(['item.getAll']);
+		},
+	});
+
+	const checkMarkerAddMutation = createMutation({
+		mutationFn: ({ markerId }: { markerId: number, markerImg: string, markerName: string }) =>
+			client.checks.addMarker.mutate({
+				checkId,
+				locationId,
+				markerId,
+			}),
+		meta: { queryKey: ['checks'] },
+		onMutate({ markerId, markerImg, markerName }) {
+			const currentMarkerData = checkMarkerQuery.data ?? [];
+			if (currentMarkerData.some((marker) => marker.id === markerId)) return
+			queryClient.setQueryData(
+				['checks.getMarkers', locationId.toString(), checkId.toString()],
+				[...currentMarkerData, { id: markerId, name: markerName, img: markerImg }]
+			);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries([
+				'checks.getMarkers',
+				locationId.toString(),
+				checkId.toString(),
+			]);
+		}
+	})
+
+	const checkMarkerDeleteMutation = createMutation({
+		mutationFn: ({ markerId }: { markerId: number }) =>
+			client.checks.removeMarker.mutate({
+				checkId,
+				locationId,
+				markerId,
+			}),
+		meta: { queryKey: ['checks'] },
+		onMutate({ markerId }) {
+			const currentMarkerData = checkMarkerQuery.data ?? [];
+			const newMarkerData = currentMarkerData.filter((marker) => marker.id !== markerId);
+			queryClient.setQueryData(
+				['checks.getMarkers', locationId.toString(), checkId.toString()],
+				newMarkerData
+			);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries([
+				'checks.getMarkers',
+				locationId.toString(),
+				checkId.toString(),
+			]);
+		}
+	})
 
 	const setCheckbox = (value: boolean) => {
 		setIsChecked(value);
@@ -108,7 +176,8 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 			unchecking = false;
 		}
 		if (selectedItem()) {
-			checkItemMutation.mutate({ itemId: selectedItem()!.id, create: true });
+			if (selectedItem()!.type === "MARKER") checkMarkerAddMutation.mutate({ markerId: selectedItem()!.id, markerImg: selectedItem()!.src, markerName: selectedItem()!.name })
+			else checkItemAddMutation.mutate({ itemId: selectedItem()!.id, itemName: selectedItem()!.name, itemImg: selectedItem()!.src })
 			setSelectedItem(undefined);
 		}
 	};
@@ -149,7 +218,7 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 							alt={item.name}
 							onContextMenu={(e) => {
 								e.preventDefault()
-								checkItemMutation.mutate({ itemId: item.id, create: false })
+								checkItemDeleteMutation.mutate({ itemId: item.id })
 							}}
 						/>
 					)}
@@ -163,6 +232,10 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 							src={'/' + marker.img}
 							class="w-6 h-6"
 							alt={marker.name}
+							onContextMenu={(e) => {
+								e.preventDefault()
+								checkMarkerDeleteMutation.mutate({ markerId: marker.id })
+							}}
 						/>
 					)}
 				</For>

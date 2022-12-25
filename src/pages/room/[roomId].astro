@@ -42,7 +42,13 @@ const locations = await prisma.location.findMany({ where: { roomId } });
 const trpcCaller = appRouter.createCaller({ prisma, userId, roomId });
 const users = await trpcCaller.user.getUsers();
 const items = await trpcCaller.item.getAll();
-const markers = await prisma.marker.findMany({ where: { roomId } });
+const markers = (await prisma.marker.findMany({ where: { roomId } })).map(
+	(marker) => ({
+		id: marker.id,
+		name: marker.name,
+		img: marker.img,
+	})
+);
 
 const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 ---

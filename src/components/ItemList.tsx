@@ -23,6 +23,12 @@ import { userList } from './UserList';
 export type ItemFromApi =
 	inferRouterOutputs<AppRouter>['item']['getAll'][number];
 
+export interface Marker {
+	id: number;
+	name: string;
+	img: string;
+}
+
 const [itemListState, setItemListState] = createStore<ItemFromApi[]>([]);
 export const itemList = {
 	getItem: (id: number) => itemListState.find((item) => item.id === id),
@@ -186,18 +192,18 @@ const Item = ({ item }: { item: ItemFromApi; isHM?: boolean }) => {
 	);
 };
 
-const Marker = ({ item }: { item: ItemFromApi }) => {
-	const { name, img, id, type } = item;
+const Marker = ({ marker }: { marker: Marker }) => {
+	const { name, img, id } = marker;
 	return (
 		<li class="w-max">
 			<button
 				class="grid justify-center place-items-center"
 				onClick={() => {
 					console.log('clicked');
-					setSelectedItem({ id, src: img, name, type });
+					setSelectedItem({ id, src: img, name, type: "MARKER" });
 				}}>
-				<img src={'/' + item.img} class="w-10 block" alt="" />
-				<p class="">{item.name}</p>
+				<img src={'/' + img} class="w-10 block" alt="" />
+				<p class="">{name}</p>
 				<Show when={selectedItem()?.id === id}>
 					<MouseItem src={'/' + img} />
 				</Show>
@@ -206,7 +212,7 @@ const Marker = ({ item }: { item: ItemFromApi }) => {
 	);
 };
 
-export const ItemList = ({ items }: { items: ItemFromApi[] }) => {
+export const ItemList = ({ items, markers }: { items: ItemFromApi[], markers: Marker[] }) => {
 	createQuery(
 		() => ['item.getAll'],
 		() => client.item.getAll.query(),
@@ -221,7 +227,6 @@ export const ItemList = ({ items }: { items: ItemFromApi[] }) => {
 	const otherItems = items.filter((item) => item.type === 'GENERAL');
 	const hmItems = items.filter((item) => item.type === 'HM');
 	const badgeItems = items.filter((item) => item.type === 'BADGE');
-	const markers = items.filter((item) => item.type === 'MARKER');
 
 	return (
 		<section class="grid gap-4 content-start">
@@ -235,7 +240,7 @@ export const ItemList = ({ items }: { items: ItemFromApi[] }) => {
 				<For each={badgeItems}>{(item) => <Item item={item} />}</For>
 			</ul>
 			<ul class="flex gap-x-2 w-full justify-evenly">
-				<For each={markers}>{(item) => <Marker item={item} />}</For>
+				<For each={markers}>{(marker) => <Marker marker={marker} />}</For>
 			</ul>
 		</section>
 	);
