@@ -37,9 +37,9 @@ let userId = Astro.cookies.get(roomId).value ?? '';
 const user = await prisma.user.findUnique({ where: { id: userId } });
 if (!user) return Astro.redirect(`/?error=${roomId}&userError=${userId}`);
 
-const locations = await prisma.location.findMany({ where: { roomId } });
-
 const trpcCaller = appRouter.createCaller({ prisma, userId, roomId });
+const locations = await trpcCaller.location.getAll();
+/*const locations = await prisma.location.findMany({ where: { roomId } });*/
 const users = await trpcCaller.user.getUsers();
 const items = await trpcCaller.item.getAll();
 const markers = (await prisma.marker.findMany({ where: { roomId } })).map(
@@ -58,7 +58,7 @@ const webRtcRoomId = Astro.url.host + roomId + room.rtcId;
 		client:load
 		items={items}
 		markers={markers}
-		locations={locations}
+		locations={locations.locations!}
 		users={users}
 		mapWidth={IMG_WIDTH}
 		webRtcRoomId={webRtcRoomId}

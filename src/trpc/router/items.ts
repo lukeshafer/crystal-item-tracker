@@ -17,6 +17,7 @@ export const itemsRouter = router({
 					name: true,
 					type: true,
 					img_mods: true,
+					codes: true,
 				},
 			});
 			return result;
@@ -34,6 +35,63 @@ export const itemsRouter = router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			const { prisma, userId, roomId } = ctx;
+
+			try {
+				// Get user's current progressCodes, and either add remove the item's code 
+				const user = await prisma.user.findUnique({
+					where: {
+						id: userId
+					},
+					select: {
+						progressCodes: true
+					}
+				});
+				const item = await prisma.item.findUnique({
+					where: {
+						id_roomId: {
+							id: input.itemId,
+							roomId
+						}
+					},
+					select: {
+						codes: true
+					}
+				});
+				if (!user || !item) {
+					throw new Error('User or item not found');
+				}
+				const progressCodeData = z.array(z.string()).safeParse(JSON.parse(user.progressCodes));
+				if (!progressCodeData.success) {
+					throw new Error('Invalid progress codes');
+				}
+
+				const progressCodes = progressCodeData.data;
+				const itemCodes = item.codes.split(',');
+
+				// If adding, add all item codes to progress codes 
+				// If removing, remove all item codes from progress codes 
+				const newCodes = input.isCollected ?
+					progressCodes.reduce((acc, code) =>
+						itemCodes.includes(code) ?
+							acc
+							: [...acc, code], [] as string[])
+					: progressCodes.filter((code) => !itemCodes.includes(code))
+				const newProgressCodes = JSON.stringify(newCodes);
+
+				// Update user's progress codes 
+				await prisma.user.update({
+					where: {
+						id: userId,
+					},
+					data: {
+						progressCodes: newProgressCodes,
+					},
+				});
+
+			} catch (err) {
+				console.error(err);
+			}
+
 			try {
 				const result = await prisma.userItem.update({
 					where: {

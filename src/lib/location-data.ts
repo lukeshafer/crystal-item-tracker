@@ -10,6 +10,7 @@ const locationSchema = z
 			default: z.array(
 				z.object({
 					name: z.string(),
+					access_rules: z.array(z.string()).optional(),
 					sections: z
 						.array(
 							z

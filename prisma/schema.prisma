@@ -31,46 +31,53 @@ enum RoomStatus {
 }
 
 model User {
-    id          String      @unique @default(cuid())
-    name        String
-    items       UserItem[]
-    checks      UserCheck[]
-    roomId      String
-    preferences String?
-    room        Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
-    createdAt   DateTime    @default(now())
-    updatedAt   DateTime    @updatedAt
+    id            String      @unique @default(cuid())
+    name          String
+    items         UserItem[]
+    checks        UserCheck[]
+    preferences   String?
+    roomId        String
+    room          Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+    progressCodes String // Stringified JSON array of progress codes
 
     @@id([id, roomId])
     @@index([roomId])
 }
 
 model Location {
-    id        Int
-    roomId    String
-    room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-    checks    Check[]
-    name      String
-    x         Int
-    y         Int
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id          Int
+    roomId      String
+    room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    checks      Check[]
+    name        String
+    x           Int
+    y           Int
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    accessRules String? // Stringified array of access rules
 
     @@id([id, roomId])
     @@index([roomId], name: "roomId")
 }
 
 model Check {
-    id           Int
-    name         String
-    roomId       String
-    locationId   Int
-    location     Location      @relation(fields: [locationId, roomId], references: [id, roomId], onDelete: Cascade)
-    items        Item[]
-    userchecks   UserCheck[]
-    createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt
-    markerChecks MarkerCheck[]
+    id              Int
+    name            String
+    roomId          String
+    locationId      Int
+    location        Location      @relation(fields: [locationId, roomId], references: [id, roomId], onDelete: Cascade)
+    items           Item[]
+    userchecks      UserCheck[]
+    createdAt       DateTime      @default(now())
+    updatedAt       DateTime      @updatedAt
+    markerChecks    MarkerCheck[]
+    accessRules     String? // Stringified array of access rules
+    visibilityRules String? // Stringified array of visibility rules
+    hosted_item     String?
+    item_count      Int?
+    clear_as_group  Boolean       @default(true)
 
     @@id([id, roomId, locationId])
     @@index([locationId, roomId], name: "LocationCheck")
@@ -104,6 +111,7 @@ model Item {
     img               String
     name              String
     type              ItemType
+    codes             String
     img_mods          String?
     createdAt         DateTime   @default(now())
     updatedAt         DateTime   @updatedAt

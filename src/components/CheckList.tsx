@@ -187,8 +187,6 @@ const ItemCheck = ({ value }: { value: ItemCheckProps }) => {
 		if (checkbox.checked) {
 			unchecking = true;
 			checkbox.click();
-		} else {
-			//checkItemMutation.mutate(undefined);
 		}
 	};
 
@@ -253,7 +251,6 @@ export const CheckList = () => {
 			client.checks.getAllForLocation.query({
 				locationId: currentLocation()!.id,
 			})
-		//{ staleTime: Infinity }
 	);
 
 	return (

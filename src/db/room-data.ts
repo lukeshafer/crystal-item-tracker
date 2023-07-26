@@ -71,6 +71,7 @@ export const initRoom = async () => {
 					img,
 					img_mods,
 					type,
+					codes,
 				});
 				return acc;
 			},
@@ -83,6 +84,7 @@ export const initRoom = async () => {
 					img: string;
 					img_mods?: string | null;
 					type: 'HM' | 'BADGE' | 'GENERAL';
+					codes: string;
 				}[],
 			}
 		);
@@ -105,6 +107,7 @@ export const initRoom = async () => {
 				id: locationIndex,
 				roomId: roomId,
 				name: location.name,
+				accessRules: location.access_rules ? JSON.stringify(location.access_rules) : null,
 				x: Math.floor(location.map_locations?.at(0)?.x!),
 				y: Math.floor(location.map_locations?.at(0)?.y!),
 			})),
@@ -117,6 +120,11 @@ export const initRoom = async () => {
 					locationId: locationIndex,
 					roomId: roomId,
 					name: check.name,
+					accessRules: check.access_rules ? JSON.stringify(check.access_rules) : null,
+					visibilityRules: check.visibility_rules ? JSON.stringify(check.visibility_rules) : null,
+					hosted_item: check.hosted_item ?? null,
+					item_count: check.item_count ?? null,
+					clear_as_group: check.clear_as_group ?? true,
 				}))
 			),
 		});
@@ -154,6 +162,7 @@ export const initUser = async ({
 			data: {
 				name,
 				roomId: room.id,
+				progressCodes: JSON.stringify([]),
 			},
 		});
 
